@@ -1,12 +1,13 @@
+import eventlet
+eventlet.monkey_patch()
 from html.parser import HTMLParser
-import gevent.monkey
-gevent.monkey.patch_all()
+#from gevent import monkey
+#monkey.patch_all(ssl=False)
 import urllib.request
-import re,sys, requests, eventlet
+import re,sys, requests
 
 global url, visited, parent_url, rec
 visited = []
-eventlet.monkey_patch()
 pdfs = {}
 pdfnames = []
 valid_pdfs = []
@@ -148,9 +149,7 @@ if __name__ == '__main__':
         index_urls = start_index_scraper(sys.argv[1])
         
         for index_url in index_urls:
-            print()
-            print(rec)
-            print()
+            
             #print(f"\nchecking {index_url} ... \n")
             parent_url = index_url
             try:

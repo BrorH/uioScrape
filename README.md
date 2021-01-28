@@ -22,9 +22,9 @@ Please use with care so as to not overload the UiO servers :)
 - [ ] add smarter pdf-quality check. i.e only check response status if pdf seems to be an exam
 - [ ] add auto-download option
 - [ ] add wider command-line argument support
-- [ ] add a request-throttle so as to prevent stress on uio server
+- [ ] add a request-throttle so as to prevent stress on uio server
 - [ ] store links in cache
 - [ ] store light version of semester websites in cachce and compare to current. Re-run scraper if versions do not match
 - [x] put everything into a class
-- eat pizza
+- [ ] eat pizza
 

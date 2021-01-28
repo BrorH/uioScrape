@@ -1,12 +1,10 @@
 import eventlet
 eventlet.monkey_patch()
 from html.parser import HTMLParser
-#from gevent import monkey
-#monkey.patch_all(ssl=False)
 import urllib.request
 import re,sys, requests
 
-global url, visited, parent_url, rec
+global url, visited, parent_url, rec, subject_type, subject_uuid
 visited = []
 pdfs = {}
 pdfnames = []
@@ -71,7 +69,7 @@ class LinkScrapeChild(HTMLParser):
                                                 valid_pdfs.append(pdfs[pdfname])
                                     except eventlet.timeout.Timeout:
                                         potential_pdfs.append(pdfs[pdfname])
-                                        print("IGNORED", pdfname, pdfs[pdfname])
+                                        print("Timed out:", pdfname, pdfs[pdfname])
 
                             except KeyError:
                                 continue
@@ -108,10 +106,11 @@ def fill_incomplete_url(link):
     
 
 
-def start_index_scraper(subject):
-    global url, subject_code, parent_url, visited
-    subject_code = subject.upper()
-    url = "https://www.uio.no/studier/emner/matnat/fys/" + subject.upper() +"/"
+def start_index_scraper():
+    global url, subject_code, parent_url, visited, subfaculty, subject_type
+    #subject_code = subject.upper()
+
+    url = f"https://www.uio.no/studier/emner/matnat/{subfaculty}/{subject_code}/"
     parent_url = url
     visited.append(url)
     request_object = urllib.request.Request(url)
@@ -142,13 +141,36 @@ def child_scraping(url_, depth = 0):
 
 deep = 3
 
+def initializer(subject):
+    global subject_type, subject_uuid, subject_code, subfaculty
+    # extracts subject code, subject type (mat, fys etc) and does other initializing
+
+    subject_subfaculty_dict = {"fys":"fys", "fys-mek":"fys", "in":"ifi", "mat":"math", "mek":"math", "ast":"astro"}
+
+    subject_code = subject.upper()
+    subject_regex = re.search(r"([a-zA-Z\-]+)(\d+)", subject)
+    if subject_regex:
+        subject_type = subject_regex.group(1)
+        subject_uuid = subject_regex.group(2)
+    else:
+        print(f"Error, subject code '{subject}' is note valid")
+        sys.exit(1)
+    try:
+        subfaculty = subject_subfaculty_dict[subject_type]
+    except KeyError:
+        print(f"Subject '{subject_code}' of type '{subject_type}' not yet supported")
+        sys.exit(1)
+    
+        
 
 
 if __name__ == '__main__':
     try:
-        index_urls = start_index_scraper(sys.argv[1])
-        
-        for index_url in index_urls:
+        initializer(sys.argv[1])
+        index_urls = start_index_scraper()
+        print(f"Found {len(index_urls)} links of interest on main semester page")
+
+        for i,index_url in enumerate(index_urls):
             
             #print(f"\nchecking {index_url} ... \n")
             parent_url = index_url
@@ -156,6 +178,7 @@ if __name__ == '__main__':
                 child_urls = child_scraping(index_url)
             except urllib.error.HTTPError:
                 pass
+            print(f"{round(((i+1)*100)//len(index_urls))}%")
     except KeyboardInterrupt:
         pass
     print()

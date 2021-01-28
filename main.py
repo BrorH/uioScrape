@@ -1,15 +1,17 @@
 from html.parser import HTMLParser
+import gevent.monkey
+gevent.monkey.patch_all()
 import urllib.request
 import re,sys, requests, eventlet
 
-global url, visited, parent_url
+global url, visited, parent_url, rec
 visited = []
 eventlet.monkey_patch()
 pdfs = {}
 pdfnames = []
 valid_pdfs = []
 potential_pdfs = []
-
+rec = 0
 
 ignore_pdfs = ["lecture", "smittevern", "Lecture", "oblig", "week", "Week", "exercise", "Oblig", "ukesoppgave", "Ukesoppgave", "oppgave", "Oppgave"]
 
@@ -120,7 +122,7 @@ def start_index_scraper(subject):
     return link_parser.urls 
 
 def child_scraping(url_, depth = 0):
-    global url,visited
+    global url,visited, rec
     url = url_
     visited.append(url) 
 
@@ -132,6 +134,7 @@ def child_scraping(url_, depth = 0):
    
     if depth <= 1:
         for url__ in link_parser.urls:
+            rec += 1
             child_scraping(url__, depth + 1)
     return link_parser.urls
 
@@ -145,6 +148,9 @@ if __name__ == '__main__':
         index_urls = start_index_scraper(sys.argv[1])
         
         for index_url in index_urls:
+            print()
+            print(rec)
+            print()
             #print(f"\nchecking {index_url} ... \n")
             parent_url = index_url
             try:

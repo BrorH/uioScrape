@@ -2,8 +2,8 @@
 Retrieve old exams and solutions from anyy subject by the press of a button
 
 ## Requriements:
-- python3.8 or higher
-- urllib, eventlet
+* python3.8 or higher
+* urllib, eventlet
 ## Usage:
 python3 main.py subject
 
@@ -25,4 +25,5 @@ Please use with care so as to not overload the UiO servers :)
 - add a request-throttle so as to prevent stress on uio server
 - store links in cache
 - store light version of semester websites in cachce and compare to current. Re-run scraper if versions do not match
-- put everything into a class
+- put everything into a class -
+

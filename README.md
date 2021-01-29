@@ -17,8 +17,9 @@ Please use with care so as to not overload the UiO servers :)
 - [ ] support other faculties than just matnat
 - [ ] support retrieving other files than just exams, like lectures, messages, formula sheets, all .txt/.py files, etc. 
 - [ ] faster search
+    - [x] threading (can be further improved)
     - [ ] Only some areas of the website will contain potential interesting links
-    - [ ] Some links are commonly uninteresting across all semester page
+    - [x] Some links are commonly uninteresting across all semester page
 - [ ] add smarter pdf-quality check. i.e only check response status if pdf seems to be an exam
 - [ ] add auto-download option
 - [ ] add wider command-line argument support

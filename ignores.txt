@@ -60,3 +60,11 @@ mn.uio.no/fysikk/personer
 mn.uio.no/fysikk/personer/adm
 mn.uio.no/fysikk/personer/vit
 fys.uio.no/oblig
+uio.no/english/studies/examinations/submissions
+uio.no/studier/admin/eksamen
+uio.no/english/studies/admission/phd
+www.uio.no/english/studies/start-of-studies
+uio.no/english/studies
+uio.no/english/studies/courses
+uio.no/english/studies/resources/
+uio.no/english/studies/courses/law

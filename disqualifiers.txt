@@ -8,3 +8,7 @@ podcast
 blogg
 pensum
 devilry
+studies/examinations
+admin
+kontaktinformasjon
+summerschool

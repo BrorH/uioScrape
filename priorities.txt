@@ -24,3 +24,5 @@ prosjekt 3
 project 3
 bok 3
 ukeplan 0
+../ 0
+informasjon 3

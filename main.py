@@ -32,10 +32,11 @@ class LinkScrape:
     valid_pdfs = []
 
     subject_subfaculty_dict = {"fys":"fys", "fys-mek":"fys", "in":"ifi", "mat":"math", "mek":"math", "ast":"astro", "kjm":"kjemi", "bios":"ibv", "bios-in":"ibv", "farm":"farmasi", "fys-stk":"fys", "mat-inf":"math"}
-    def __init__(self, subject, max_depth, max_requests):
+    def __init__(self, subject, max_depth, max_requests, speed):
         self.max_depth = max_depth
         self.max_requests = max_requests
         self.requests_done = 0
+        self.speed = speed
         
 
         self.base_url = "https://www.uio.no/studier/emner/matnat/"
@@ -184,7 +185,7 @@ class LinkScrape:
         threads = [threading.Thread(target=self.read_url, args = (url, q)) for url in urls_to_load[:url_range]]
         for t in threads:
             t.start()
-            time.sleep(0.5)
+            time.sleep(self.speed)
         for t in threads:
             try:
                 res.append(q.get(block=True, timeout=0.1)) 
@@ -332,6 +333,7 @@ parser.add_argument('SUBJECT', metavar='SUBJECT', nargs=1,
 parser.add_argument('-d', dest='depth', metavar="depth", default=2,
                     help='How many layers deep the scraping should go. This caues the number of requests to grow exponentially. Default: 2')
 parser.add_argument("-r", dest="requests",  metavar="requests", default=50, help="max. number of requests to make. Increase at own risk. Default: 50")
+parser.add_argument("-s", dest="speed",  metavar="speed", default=0.5, help="Sleep time (s) between requests. Decrease to make search faster. Default: 0.5")
 
 
 
@@ -340,10 +342,11 @@ if __name__ == '__main__':
     args = parser.parse_args()
     max_requests = int(args.requests)
     max_depth = int(args.depth)
+    speed =float(args.speed)
     subject = args.SUBJECT[0]
     start = time.time()
     #sys.exit()
-    scraper = LinkScrape(subject = subject, max_depth=max_depth, max_requests = max_requests)
+    scraper = LinkScrape(subject = subject, max_depth=max_depth, max_requests = max_requests, speed=speed)
     scraper.start()
     end = time.time()
     print()

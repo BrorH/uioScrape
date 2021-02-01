@@ -11,6 +11,8 @@ uio.no/studier/eksamen
 uio.no/studier/emner
 uio.no/studier/emner/matnat
 uio.no/studier/emner/matnat/fys
+uio.no/studier/emner/matnat/math
+uio.no/studier/emner/matnat/ifi
 uio.no/personer
 om/kontaktinformasjon
 javascript:void(0)
@@ -68,3 +70,7 @@ uio.no/english/studies
 uio.no/english/studies/courses
 uio.no/english/studies/resources/
 uio.no/english/studies/courses/law
+uio.no/tavle
+uio.no/for-ansatte
+uio.no/it
+ub.uio.no

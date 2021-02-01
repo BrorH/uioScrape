@@ -28,7 +28,7 @@ class LinkScrape:
     valid_pdfs = []
     potential_pdfs = []
 
-    subject_subfaculty_dict = {"fys":"fys", "fys-mek":"fys", "in":"ifi", "mat":"math", "mek":"math", "ast":"astro", "kjm":"kjemi", "bios":"ibv", "bios-in":"ibv", "farm":"farmasi", "fys-stk":"fys"}
+    subject_subfaculty_dict = {"fys":"fys", "fys-mek":"fys", "in":"ifi", "mat":"math", "mek":"math", "ast":"astro", "kjm":"kjemi", "bios":"ibv", "bios-in":"ibv", "farm":"farmasi", "fys-stk":"fys", "mat-inf":"math"}
     def __init__(self, subject, max_depth, max_requests):
         self.max_depth = max_depth
         self.max_requests = max_requests

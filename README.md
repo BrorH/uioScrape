@@ -7,7 +7,7 @@ The search can be stopped at any time by pressing ctrl+C.
 
 ## Requriements:
 * python3.8 or higher
-* urllib, eventlet, argparse, multiprocessing (let me know if I'm missing any)
+* urllib, ratelimit, argparse, multiprocessing (let me know if I'm missing any)
 ## Usage:
 `python3 main.py subject`
 
@@ -26,6 +26,7 @@ The search can be stopped at any time by pressing ctrl+C.
 - [ ] store links in cache
 - [ ] store light version of semester websites in cachce and compare to current. Re-run scraper if versions do not match
 - [x] put everything into a class
+- [ ] print result in a prettier manner. Collect exams by semester and print pairwise (if possible)
 - [ ] eat pizza
 - [ ] add warning messages if user inputs parameters that may cause a high load on the servers
 

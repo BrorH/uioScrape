@@ -1,17 +1,16 @@
 # UiOScrape
-Retrieve old exams and solutions from anyy subject by the press of a button
+Retrieve exams and solutions from any matnat subject by the press of a button.
+Scrapes all semester pages of a matnat subject and smartly finds pdf's of old exams and (similar files)
+Is programmed to not overload or cause strain on the UiO servers in any manner, but use at your own risk and do not tweak the code too much if you do not know how to use it
+Still an early version and bug MUST be expected.
+The search can be stopped at any time by pressing ctrl+C.
 
 ## Requriements:
 * python3.8 or higher
-* urllib, eventlet
+* urllib, eventlet, argparse, multiprocessing (let me know if I'm missing any)
 ## Usage:
 `python3 main.py subject`
 
-## NOTE
-currently only works with fys-subjects
-It is not currently very optimized, but it works (barely)
-Stop the search any time by pressing ctrl+C
-Please use with care so as to not overload the UiO servers :)
 
 ## todo
 - [ ] support other faculties than just matnat
@@ -22,11 +21,11 @@ Please use with care so as to not overload the UiO servers :)
     - [x] Some links are commonly uninteresting across all semester page
 - [x] add smarter pdf-quality check. i.e only check response status if pdf seems to be an exam
 - [ ] add auto-download option
-- [ ] add wider command-line argument support
+- [x] add wider command-line argument support
 - [x] add a request-throttle so as to prevent stress on uio server
 - [ ] store links in cache
 - [ ] store light version of semester websites in cachce and compare to current. Re-run scraper if versions do not match
 - [x] put everything into a class
 - [ ] eat pizza
-- [ ] add warnign messages if user inputs parameters that may cause a high load on the servers
+- [ ] add warning messages if user inputs parameters that may cause a high load on the servers
 

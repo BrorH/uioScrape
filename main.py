@@ -1,4 +1,5 @@
 from html.parser import HTMLParser
+import http.client
 import re, sys, requests, threading, itertools, time, argparse
 from urllib import request
 import urllib.error
@@ -203,6 +204,8 @@ def read_url(parent_url, queue):
             print(f"Timed out: {parent_url}")
             queue.put([])
             return
+        except http.client.InvalidURL:
+            print(parent_url)
     else:
         if not REACHED_MAX_ALERED:
             print("REACHED MAX NUMBER OF REQUESTS")
@@ -292,7 +295,10 @@ def merge(master, rel):
     for idx,sub in enumerate(master):
         if sub == rel[0]:
             return "https://"+"/".join(master[:idx] + rel )
-    return "https://"+"/".join(master + rel )
+    res = "https://"+"/".join(master + rel )
+    if " " in res:
+        res = res[res.index(" "):]
+    return res
    
 
 

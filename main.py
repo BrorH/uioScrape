@@ -3,7 +3,8 @@ import http.client
 import re, sys, requests, threading, itertools, time, argparse
 from urllib import request
 import urllib.error
-from multiprocessing import Queue
+# from multiprocessing import Queue
+import queue, _queue
 import numpy as np
 
 semester_exam_index_remover_regex = re.compile(r"(?s)(?:.*?)/[vh]\d{2}/eksamen/", re.IGNORECASE)
@@ -29,12 +30,12 @@ class LinkScrape:
     visited = []
     pdfs = {}
     valid_pdfs = []
-    potential_pdfs = []
 
     subject_subfaculty_dict = {"fys":"fys", "fys-mek":"fys", "in":"ifi", "mat":"math", "mek":"math", "ast":"astro", "kjm":"kjemi", "bios":"ibv", "bios-in":"ibv", "farm":"farmasi", "fys-stk":"fys", "mat-inf":"math"}
     def __init__(self, subject, max_depth, max_requests):
         self.max_depth = max_depth
         self.max_requests = max_requests
+        self.requests_done = 0
         
 
         self.base_url = "https://www.uio.no/studier/emner/matnat/"
@@ -58,34 +59,32 @@ class LinkScrape:
         self.start_index_scraper()
 
         self.urls_to_be_checked = self.parent_urls.copy()  
-        #print(self.urls_to_be_checked)
-        #sys.exit()
         try:
             for i in range(self.max_depth):
-                
-                child_urls_ = fetch_parallel(self.urls_to_be_checked)#, iteration=i)
-                child_urls = [foo[0][1:] for foo in child_urls_] # the semester page itself is always the first found url. Remove this
+                child_urls_ = self.fetch_parallel(self.urls_to_be_checked)#, iteration=i)
+                child_urls = [foo[1:] for foo in child_urls_] # the semester page itself is always the first found url. Remove this
                 #child_urls = list(itertools.chain.from_iterable(child_urls_)) # join into one list
-                #print(child_urls)
                 
                 if i == 0:
-                    parent_urls = [foo[0][0] for foo in child_urls_.copy()]
+                    try:
+                        self.parent_urls = [foo[0][0] for foo in child_urls_.copy()]
+                    except IndexError:
+                        print(f"No PDFs found. Either reqest amount or depth is too low or subject has no PDFs. Be wary when increasing requests beyond 200.")
+                        sys.exit(1)
+
                 new_urls_to_be_checked = []
-                for childs,parent_url in zip(child_urls, parent_urls):
+                for childs,parent_url in zip(child_urls, self.parent_urls):
                     for url in childs:
-                        if scrape_result:=self.check_url_and_update_storage(url, parent_url, parent_urls):
+                        if scrape_result:=self.check_url_and_update_storage(url, parent_url):
                             new_urls_to_be_checked.append(scrape_result)
                         
                 
-                #print(new_urls_to_be_checked)
-                #sys.exit()
-                self.urls_to_be_checked = reorder_urls_by_priority(new_urls_to_be_checked.copy())
+                if i != self.max_depth -1:
+                    self.urls_to_be_checked = reorder_urls_by_priority(new_urls_to_be_checked.copy())
         except KeyboardInterrupt:
             pass
 
         
-
-    
 
     def start_index_scraper(self):
 
@@ -111,10 +110,7 @@ class LinkScrape:
                     self.parent_urls.append(link)
     
 
-        
-
-
-    def check_url_and_update_storage(self, url, parent_url, parent_urls):
+    def check_url_and_update_storage(self, url, parent_url):
         """
         performs several checks on a given url and does one of three things:
         - discards the url if it is not of interest 
@@ -149,7 +145,7 @@ class LinkScrape:
             if re.search(r".*\?[^/]+",url): return # any urls with arguments passed after a ? in the url has proven uninteresting so far, so they are ignored
             if not "uio" in url: return
             if "@" in url: return
-            if url in parent_urls: return
+            if url in self.parent_urls: return
             if semester_exam_index_remover_regex.match(url): return
             if ".." in url: return
             if self.subject_type not in url: return
@@ -158,6 +154,47 @@ class LinkScrape:
             if url not in self.urls:
                 self.urls.append(url)
                 return url
+
+
+    def read_url(self,parent_url, q):
+        #print(parent_url)
+        if self.requests_done < self.max_requests:
+            self.requests_done += 1
+            try:
+                data =  request.urlopen(parent_url).read()
+                data = [parent_url]+extract(data, parent_url)
+                q.put(data)
+                sys.stdout.write("Requests completed: %i/%i \r" %(self.requests_done, self.max_requests))
+                sys.stdout.flush()
+            except urllib.error.HTTPError:
+                print(f"Timed out: {parent_url}")
+            except http.client.InvalidURL:
+                print(f"ERROR: Invalid url: {parent_url}")
+        else:
+            print("Fatal error! Max requests limit breached! Exiting!")
+    
+        
+    def fetch_parallel(self, urls_to_load):
+        q = queue.Queue()
+        res = []
+        if len(urls_to_load) >= self.max_requests- self.requests_done:
+            url_range = self.max_requests- self.requests_done 
+        else:
+            url_range = len(urls_to_load)
+        threads = [threading.Thread(target=self.read_url, args = (url, q)) for url in urls_to_load[:url_range]]
+        for t in threads:
+            t.start()
+            time.sleep(0.5)
+        for t in threads:
+            try:
+                res.append(q.get(block=True, timeout=0.1)) 
+            except _queue.Empty:
+                pass
+        for t in threads:   
+            t.join(0.1)
+            
+        return res
+
 
 def reorder_urls_by_priority(urls, tolerance=80):
     # tolerance is how many percent of the urls are to be returned
@@ -172,10 +209,7 @@ def reorder_urls_by_priority(urls, tolerance=80):
     res = []
     for i,pri in enumerate(pri_vals_args):
         res.append(urls[pri])
-    
     return res[:int(len(urls)*tolerance/100)]
-
-
 
 
 def relative_to_absolute_url(link, parent_url):
@@ -185,7 +219,6 @@ def relative_to_absolute_url(link, parent_url):
         return link
     
     # add check for correct top level domain
-    
     if link.startswith("/"):
         link = link[1:]
     
@@ -196,42 +229,6 @@ def relative_to_absolute_url(link, parent_url):
             return parent_url+link
         else:
             return parent_url +"/" + link
-global REACHED_MAX_ALERED
-REACHED_MAX_ALERED = False
-#@on_exception(expo, RateLimitException, max_tries=8)
-#@limits(calls=10, period=2)
-def read_url(parent_url, queue):
-    global num_requests, REACHED_MAX_ALERED
-    if num_requests < max_requests:
-        num_requests += 1
-        #print(num_requests)
-        try:
-            data = request.urlopen(parent_url).read()
-            sys.stdout.write("Requests completed: %i/%i \r" %(num_requests, max_requests))
-            sys.stdout.flush()
-        except urllib.error.HTTPError:
-            print(f"Timed out: {parent_url}")
-            queue.put([])
-            return
-        except http.client.InvalidURL:
-            print(f"ERROR: Invalid url: {parent_url}")
-            queue.put([])
-            return
-    else:
-        if not REACHED_MAX_ALERED:
-            print("\nCompiling results, please wait... (alternatively press ctrl+C to get semi-compiled results)")
-            REACHED_MAX_ALERED = not REACHED_MAX_ALERED
-        queue.put([])
-        return
-    
-   
-    data = [parent_url]+extract(data, parent_url)
-                
-
-    time.sleep(1)
-    queue.put(data)
-
-
 
 
 
@@ -326,21 +323,7 @@ def merge(master, rel):
 
 
 
-def fetch_parallel(urls_to_load):
-    result = Queue()
-    res = []
 
-   
-    
-    threads = [threading.Thread(target=read_url, args = (url, result)) for url in urls_to_load]
-    for t in threads:
-        t.start()
-        time.sleep(0.2)
-    for t in threads:
-        res.append([result.get()])
-    for t in threads:
-        t.join()
-    return res
 
 
 parser = argparse.ArgumentParser(description='Scrape all semester pages of a UiO subject in order to get the urls of pdfs of old exams and their solutions.\n Made by Bror Hjemgaard, 2021')
@@ -364,7 +347,7 @@ if __name__ == '__main__':
     scraper.start()
     end = time.time()
     print()
-    print(f"Found {len(scraper.pdfs.keys())} items in {round(end-start,2)}s after {num_requests} requests")
+    print(f"Found {len(scraper.pdfs.keys())} items in {round(end-start,2)}s after {scraper.requests_done} requests")
     print("===RESULTS===")
     print("\n".join([f"{name}: {link}" for name,link in scraper.pdfs.items()]))
     #print("\n".join([f"{name}: ../\u001b]8;;{link}\u001b\\{link.lstrip('https://www.uio.no/studier/emner/matnat/fys/'+scraper.subject_code)}\u001b]8;;\u001b\\" for name,link in scraper.pdfs.items()]))

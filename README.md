@@ -7,7 +7,7 @@ The search can be stopped at any time by pressing ctrl+C.
 
 ## Requriements:
 * python3.8 or higher
-* urllib, ratelimit, argparse, multiprocessing (let me know if I'm missing any)
+* urllib, ratelimit, argparse, multiprocessing, numpy (let me know if I'm missing any)
 ## Usage:
 `python3 main.py subject`
 

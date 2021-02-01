@@ -12,3 +12,6 @@ studies/examinations
 admin
 kontaktinformasjon
 summerschool
+contact
+career
+facilities

@@ -85,7 +85,7 @@ class LinkScrape:
         self.url = url
         self.parent_urls.append(url)
         self.visited.append(url)
-        data = request.urlopen(url).read().decode("utf-8")
+        data = request.urlopen(url).read().decode("latin-1")
         raw_parent_urls = extract_course_index(data)
         self.parent_urls = []
         for link in raw_parent_urls:
@@ -235,7 +235,7 @@ def extract_course_index(content):
     if isinstance(content, tuple):
         content = content[0]
     if isinstance(content, bytes):
-        content = content.decode("utf-8")
+        content = content.decode("latin-1")
     course_semesters_list = course_index_semester_list_regex.findall(content)[0]
     course_semesters_urls = extract_href_regex.findall(course_semesters_list)
     course_semesters_urls = [foo.rstrip("index.html") for foo in course_semesters_urls]
@@ -260,7 +260,7 @@ def extract(content, parent_url):
     if isinstance(content, tuple):
         content = content[0]
     if isinstance(content, bytes):
-        content = content.decode("utf-8")
+        content = content.decode("latin-1")
     urls = extract_href_regex.findall(content)
     urls = purge_unwanted_urls(urls)
     for i,url in enumerate(urls):

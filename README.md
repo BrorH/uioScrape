@@ -1,8 +1,8 @@
 # UiOScrape
 Retrieve exams and solutions from any matnat subject by the press of a button.
-Scrapes all semester pages of a matnat subject and smartly finds pdf's of old exams and (similar files)
-Is programmed to not overload or cause strain on the UiO servers in any manner, but use at your own risk and do not tweak the code too much if you do not know how to use it
-Still an early version and bug MUST be expected.
+Scrapes all semester pages of a matnat subject and smartly finds pdf's of old exams and (similar files). 
+Is programmed to not overload or cause strain on the UiO servers in any manner, but use at your own risk and do not tweak the code too much if you do not know how to use it.
+Still an early version and bugs should be expected.
 The search can be stopped at any time by pressing ctrl+C.
 
 ## Requriements:

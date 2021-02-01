@@ -5,8 +5,6 @@ from urllib import request
 import urllib.error
 from multiprocessing import Queue
 import numpy as np
-from ratelimit import limits, RateLimitException
-from backoff import on_exception, expo
 
 semester_exam_index_remover_regex = re.compile(r"(?s)(?:.*?)/[vh]\d{2}/eksamen/", re.IGNORECASE)
 

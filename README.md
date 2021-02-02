@@ -19,7 +19,8 @@ The search can be stopped at any time by pressing ctrl+C.
     - [x] threading (can be further improved)
     - [x] Only some areas of the website will contain potential interesting links
     - [x] Some links are commonly uninteresting across all semester page
-- [x] add smarter pdf-quality check. i.e only check response status if pdf seems to be an exam
+- [x] add smarter pdf-quality check.
+- [x] add option for quality pdf check
 - [ ] add auto-download option
 - [x] add wider command-line argument support
 - [x] add a request-throttle so as to prevent stress on uio server

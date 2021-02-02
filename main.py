@@ -24,6 +24,56 @@ with open("priorities.txt", "r") as file:
 ignore_pdfs = ["devilry","lecture", "smittevern", "Lecture", "oblig", "week", "Week", "exercise", "Oblig", "ukesoppgave", "Ukesoppgave", "oppgave", "Oppgave"]
 num_requests = 0
 
+class Url(str):
+    def __new__(cls, *args, **kw):
+        return str.__new__(cls, *args)
+
+    def __init__(self,url,  parent=None): 
+        self.provided_url = url
+        self.url = url
+        self.parent = parent
+       
+        if not "www." in self.url:
+            assert isinstance(self.parent, Url), f"Error, local url {self.provided_url} provided without parent!"
+            self.url = self.merge(self.parent)
+
+        else:
+            self.url = self.url.replace("https://www.","").replace("http://www.","").split("#")[0].split("?")[0] # remove query
+
+    def __str__(self):
+        return "https://www."+self.url
+    
+    def __repr__(self):
+        return "https://www."+self.url
+    
+    def __class__(self):
+        return str
+
+    def merge(self, master):
+        rel = self.url
+        master = master.url
+        # merges a relative url with the parent, creating an absolute path
+        rel= rel.lstrip("/")
+        if master == "":
+            return rel
+        if master.startswith("http"):
+            master = master.lstrip("https://").rstrip("/")
+
+
+        if rel.startswith("http"):
+            rel = rel.lstrip("https://")
+        master = master.split("/")
+        rel = rel.split("/")
+        for idx,sub in enumerate(master):
+            if sub == rel[0]:
+                return "https://"+"/".join(master[:idx] + rel )
+        res = "https://"+"/".join(master + rel )
+        if " " in res:
+            res = res[res.index(" "):]
+        return res
+
+
+
 class LinkScrape:
     urls = []
     parent_urls = []
@@ -89,25 +139,26 @@ class LinkScrape:
 
     def start_index_scraper(self):
 
-        url = f"https://www.uio.no/studier/emner/matnat/{self.subfaculty}/{self.subject_code}/"
-        self.url = url
+        url = Url(f"https://www.uio.no/studier/emner/matnat/{self.subfaculty}/{self.subject_code}/")
         self.parent_urls.append(url)
         self.visited.append(url)
         data = request.urlopen(url).read().decode("latin-1")
-        raw_parent_urls = extract_course_index(data)
+        raw_parent_urls = extract_course_index(data, url)
         self.parent_urls = []
+        
         for link in raw_parent_urls:
             if "@" in link: continue
-            if link == self.url: continue
-            if not link.startswith(self.url): continue
+            if link == url: continue
+            if not link.startswith(url): continue
             if link.endswith("/index-eng.html"): continue
             
 
             if re.search(r".*\?[^/]+",link): continue
-            if link.endswith("/index.html"):
-                link = link[:-10]
+            #if link.endswith("/index.html"):
+            #    link = link[:-10]
             if link.find('http') >= 0:
                 if link not in self.urls:
+
                     self.parent_urls.append(link)
     
 
@@ -192,7 +243,7 @@ class LinkScrape:
             except _queue.Empty:
                 pass
         for t in threads:   
-            t.join(0.1)
+            t.join()
             
         return res
 
@@ -245,23 +296,23 @@ course_index_semester_list_regex = re.compile(r"(?s)(<div class=\"vrtx-frontpage
 
 extract_href_regex = re.compile(r'(?s)href=\"([^\"^#^@^\?\~]*)\"[^>]*>(?:.*?)</a>', re.IGNORECASE)
 
-def extract_course_index(content):
+def extract_course_index(content, parent):
     if isinstance(content, tuple):
         content = content[0]
     if isinstance(content, bytes):
         content = content.decode("latin-1")
     course_semesters_list = course_index_semester_list_regex.findall(content)[0]
     course_semesters_urls = extract_href_regex.findall(course_semesters_list)
-    course_semesters_urls = [foo.rstrip("index.html") for foo in course_semesters_urls]
+    course_semesters_urls = [Url(foo,parent=parent) for foo in course_semesters_urls]
 
     #extract content from left menu. try/except because will fail if nothing is in left menu otherwise
     try:
         course_left_menu = course_index_left_menu_regex.findall(content)
         course_left_menu_urls = extract_href_regex.findall(course_left_menu[0])
-        course_left_menu_urls = [foo.rstrip("index.html") for foo in course_left_menu_urls]
-        #print(course_left_menu_urls)
+        course_left_menu_urls = [Url(foo, parent=parent) for foo in course_left_menu_urls]
+        
         return course_semesters_urls + course_left_menu_urls
-    except:
+    except Exception as e:
         return course_semesters_urls
     
 
@@ -331,9 +382,9 @@ parser = argparse.ArgumentParser(description='Scrape all semester pages of a UiO
 parser.add_argument('SUBJECT', metavar='SUBJECT', nargs=1,
                     help='Subject code of a matnat subject. Case insensitive')
 parser.add_argument('-d', dest='depth', metavar="depth", default=2,
-                    help='How many layers deep the scraping should go. This caues the number of requests to grow exponentially. Default: 2')
+                    help='How many layers deep the scraping should go. This causes the number of requests to grow exponentially. Default: 2')
 parser.add_argument("-r", dest="requests",  metavar="requests", default=50, help="max. number of requests to make. Increase at own risk. Default: 50")
-parser.add_argument("-s", dest="speed",  metavar="speed", default=0.5, help="Sleep time (s) between requests. Decrease to make search faster. Default: 0.5")
+parser.add_argument("-s", dest="speed",  metavar="speed", default=0.1, help="Sleep time (s) between requests. Decrease to make search faster. Default: 0.1")
 
 
 
@@ -353,5 +404,5 @@ if __name__ == '__main__':
     print(f"Found {len(scraper.pdfs.keys())} items in {round(end-start,2)}s after {scraper.requests_done} requests")
     print("===RESULTS===")
     print("\n".join([f"{name}: {link}" for name,link in scraper.pdfs.items()]))
-    #print("\n".join([f"{name}: ../\u001b]8;;{link}\u001b\\{link.lstrip('https://www.uio.no/studier/emner/matnat/fys/'+scraper.subject_code)}\u001b]8;;\u001b\\" for name,link in scraper.pdfs.items()]))
+    #print("\n".join([f"\u001b]8;;{link}\u001b\\{name}\u001b]8;;\u001b\\" for name,link in scraper.pdfs.items()]))
 

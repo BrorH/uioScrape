@@ -33,7 +33,7 @@ class Url(str):
         self.url = url
         self.parent = parent
        
-        if not "www." in self.url:
+        if not "www." not in self.url and "http" not in self.url:
             assert isinstance(self.parent, Url), f"Error, local url {self.provided_url} provided without parent!"
             self.url = self.merge(self.parent)
 
@@ -48,6 +48,17 @@ class Url(str):
     
     def __class__(self):
         return str
+    
+    # def __eq__(self, other):
+    #     #if not isinstance(other, Url):
+    #     print(type(other), other)
+    #     try:
+    #         return self.url == other.url and self.parent == other.parent
+    #     except AttributeError:
+    #         return False
+
+    def __hash__(self):
+        return hash(self.url)
 
     def merge(self, master):
         rel = self.url
@@ -79,14 +90,14 @@ class LinkScrape:
     parent_urls = []
     visited = []
     pdfs = {}
-    valid_pdfs = []
+    valid_pdfs = {}
 
     subject_subfaculty_dict = {"fys":"fys", "fys-mek":"fys", "in":"ifi", "mat":"math", "mek":"math", "ast":"astro", "kjm":"kjemi", "bios":"ibv", "bios-in":"ibv", "farm":"farmasi", "fys-stk":"fys", "mat-inf":"math"}
-    def __init__(self, subject, max_depth, max_requests, speed):
-        self.max_depth = max_depth
+    def __init__(self, subject,  max_requests, speed, quality_check):
         self.max_requests = max_requests
         self.requests_done = 0
         self.speed = speed
+        self.quality_check = quality_check
         
 
         self.base_url = "https://www.uio.no/studier/emner/matnat/"
@@ -105,36 +116,69 @@ class LinkScrape:
             sys.exit(1)
         
     
-    def start(self, depth=0,**kwargs):
-        print(f"Starting scrape of {self.subject_code   } of max depth {self.max_depth} and max requests {self.max_requests}")
+    def start(self, **kwargs):
+        print(f"Starting scrape of {self.subject_code} of max requests {self.max_requests}")
         self.start_index_scraper()
 
-        self.urls_to_be_checked = self.parent_urls.copy()  
+        self.urls_to_be_checked = self.parent_urls.copy()
+          
         try:
-            for i in range(self.max_depth):
-                child_urls_ = self.fetch_parallel(self.urls_to_be_checked)#, iteration=i)
-                child_urls = [foo[1:] for foo in child_urls_] # the semester page itself is always the first found url. Remove this
-                #child_urls = list(itertools.chain.from_iterable(child_urls_)) # join into one list
-                
-                if i == 0:
-                    try:
-                        self.parent_urls = [foo[0][0] for foo in child_urls_.copy()]
-                    except IndexError:
-                        print(f"No PDFs found. Either reqest amount or depth is too low or subject has no PDFs. Be wary when increasing requests beyond 200.")
-                        sys.exit(1)
-
+            for i in range(10): # 10 iterations should be mooore than enough
+                parallel_result = self.fetch_parallel(self.urls_to_be_checked)
+                url_parents = [foo[0] for foo in parallel_result]
+                url_childs = [[Url(bar,parent=parent) for bar in foo[1:]] for foo,parent in zip(parallel_result, url_parents)]
+                unique_urls = list(frozenset().union(*[set(foo) for foo in url_childs]))
                 new_urls_to_be_checked = []
-                for childs,parent_url in zip(child_urls, self.parent_urls):
-                    for url in childs:
-                        if scrape_result:=self.check_url_and_update_storage(url, parent_url):
+                for url in unique_urls:
+                    if scrape_result:=self.check_url_and_update_storage(url):
                             new_urls_to_be_checked.append(scrape_result)
-                        
+
+                if self.requests_done >= self.max_requests:
+                    break
+                self.urls_to_be_checked = reorder_urls_by_priority(new_urls_to_be_checked.copy())
                 
-                if i != self.max_depth -1:
-                    self.urls_to_be_checked = reorder_urls_by_priority(new_urls_to_be_checked.copy())
         except KeyboardInterrupt:
             pass
+        if self.quality_check:
+            self.purge_404()
+        else:
+            self.valid_pdfs = self.pdfs
+        
 
+        
+    def purge_404(self):
+        print(f"\nFound {len(self.pdfs.keys())} potential pdfs.")
+        sys.stdout.write(f"Quality check: 0% \r" )
+        sys.stdout.flush()
+        def check_status(pdf,name):
+            if requests.get(pdf).status_code != 404:
+                self.valid_pdfs[name] = pdf
+            
+
+        def divide_chunks(l, n): 
+            for i in range(0, len(l), n):  
+                yield l[i:i + n] 
+        
+      
+        
+        #q = queue.Queue()
+        #res = []
+        heap_size = 10 # only create thread heaps of sizes 10 or less
+       
+        unchecked_pdfs  = list(divide_chunks(list(self.pdfs.values()), heap_size)) #split into segments of length 10 for threading
+        unchecked_pdf_names = list(divide_chunks(list(self.pdfs.keys()), heap_size))  # --""--
+
+        for i,(pdfs, names) in enumerate(zip(unchecked_pdfs, unchecked_pdf_names)):
+            threads = [threading.Thread(target=check_status, args = (pdf,name)) for pdf,name in zip(pdfs, names)]
+            for t in threads:
+                t.start()
+                time.sleep(self.speed)
+            for t in threads:   
+                t.join()
+            sys.stdout.write(f"Quality check: {int((i+1)/len(unchecked_pdfs)*100)}% \r" )
+            sys.stdout.flush()
+        print(f"Quality check purged {len(self.pdfs.keys())-len(self.valid_pdfs.keys())} PDFs")
+                
         
 
     def start_index_scraper(self):
@@ -154,15 +198,16 @@ class LinkScrape:
             
 
             if re.search(r".*\?[^/]+",link): continue
-            #if link.endswith("/index.html"):
-            #    link = link[:-10]
+            if link.endswith("/index.html"):
+               link = link[:-10]
+               #print(link)
             if link.find('http') >= 0:
                 if link not in self.urls:
-
+                    self.visited.append(link)
                     self.parent_urls.append(link)
     
 
-    def check_url_and_update_storage(self, url, parent_url):
+    def check_url_and_update_storage(self, url):
         """
         performs several checks on a given url and does one of three things:
         - discards the url if it is not of interest 
@@ -172,7 +217,7 @@ class LinkScrape:
 
         the passed url can be full or relative path
         """
-        if url in scraper.visited: return 
+        if url in self.visited: return 
         if url.endswith(".pdf"): 
             # storing and categorizing pdfs
             # to add: check if link yields a valid .pdf with 2xx response.
@@ -182,13 +227,12 @@ class LinkScrape:
                 for ignore in ignore_pdfs:
                     if ignore in pdfname: return
                 try:
-                    if (pdfname not in list(self.pdfs.keys()) ) or (len(url) > len(self.pdfs[pdfname])):
-                        self.pdfs[pdfname] = relative_to_absolute_url(url, parent_url)
-                        ## fill_complete_url should be called before this
+                    if pdfname not in list(self.pdfs.keys()):
+                        self.pdfs[pdfname] = url
+                   
                 except KeyError: return
             return
         
-        url = relative_to_absolute_url(url, parent_url) # make sure url is full path and not relative
         if url.endswith(".tex"): return # ignore .tex files for now
         if url.find('http') >= 0:
             # storing and categorizing urls
@@ -208,29 +252,32 @@ class LinkScrape:
                 return url
 
 
-    def read_url(self,parent_url, q):
-        #print(parent_url)
+    def read_url(self,url, q):
         if self.requests_done < self.max_requests:
             self.requests_done += 1
             try:
-                data =  request.urlopen(parent_url).read()
-                data = [parent_url]+extract(data, parent_url)
+                data =  request.urlopen(url).read()
+                data = [url]+extract(data, url)
                 q.put(data)
                 sys.stdout.write("Requests completed: %i/%i \r" %(self.requests_done, self.max_requests))
                 sys.stdout.flush()
             except urllib.error.HTTPError:
-                print(f"Timed out: {parent_url}")
+                print(f"Timed out: {url}")
+            except urllib.error.URLError:
+                print(f"No response: {url}")
             except http.client.InvalidURL:
-                print(f"ERROR: Invalid url: {parent_url}")
+                print(f"ERROR: Invalid url: {url}")
         else:
             print("Fatal error! Max requests limit breached! Exiting!")
+            q.all_tasks_done()
+            sys.exit(1)
     
         
     def fetch_parallel(self, urls_to_load):
         q = queue.Queue()
         res = []
-        if len(urls_to_load) >= self.max_requests- self.requests_done:
-            url_range = self.max_requests- self.requests_done 
+        if len(urls_to_load) > self.max_requests- self.requests_done:
+            url_range = self.max_requests- self.requests_done
         else:
             url_range = len(urls_to_load)
         threads = [threading.Thread(target=self.read_url, args = (url, q)) for url in urls_to_load[:url_range]]
@@ -239,7 +286,8 @@ class LinkScrape:
             time.sleep(self.speed)
         for t in threads:
             try:
-                res.append(q.get(block=True, timeout=0.1)) 
+                data = q.get(block=True, timeout=0.1)
+                res.append(data) 
             except _queue.Empty:
                 pass
         for t in threads:   
@@ -378,13 +426,13 @@ def merge(master, rel):
 
 
 
-parser = argparse.ArgumentParser(description='Scrape all semester pages of a UiO subject in order to get the urls of pdfs of old exams and their solutions.\n Made by Bror Hjemgaard, 2021')
+parser = argparse.ArgumentParser(description='Scrape all semester pages of a UiO subject in order to get the urls of PDFs of old exams and their solutions.\n Made by Bror Hjemgaard, 2021')
 parser.add_argument('SUBJECT', metavar='SUBJECT', nargs=1,
                     help='Subject code of a matnat subject. Case insensitive')
-parser.add_argument('-d', dest='depth', metavar="depth", default=2,
-                    help='How many layers deep the scraping should go. This causes the number of requests to grow exponentially. Default: 2')
-parser.add_argument("-r", dest="requests",  metavar="requests", default=50, help="max. number of requests to make. Increase at own risk. Default: 50")
-parser.add_argument("-s", dest="speed",  metavar="speed", default=0.1, help="Sleep time (s) between requests. Decrease to make search faster. Default: 0.1")
+parser.add_argument("-r", dest="requests",  metavar="requests", default=50, help="Maximum number of requests to make. Increase at own risk. Note that the actual number of requests will be higher than this if quality check is enabled. Default: 50")
+parser.add_argument("-s", dest="speed",  metavar="speed", default=0.1, help="Sleep time (s) between requests. Decrease at own risk to make search faster. Default: 0.1")
+parser.add_argument('--Q', action="store_true",
+                    help='Quality check. Excludes PDFs that return 404 responses. Will increase time and number of requests. Recommended if many of the returned PDFs return empty pages')
 
 
 
@@ -392,17 +440,17 @@ parser.add_argument("-s", dest="speed",  metavar="speed", default=0.1, help="Sle
 if __name__ == '__main__':
     args = parser.parse_args()
     max_requests = int(args.requests)
-    max_depth = int(args.depth)
     speed =float(args.speed)
+    quality = bool(args.Q)
     subject = args.SUBJECT[0]
     start = time.time()
     #sys.exit()
-    scraper = LinkScrape(subject = subject, max_depth=max_depth, max_requests = max_requests, speed=speed)
+    scraper = LinkScrape(subject = subject,  max_requests = max_requests, speed=speed, quality_check = quality)
     scraper.start()
     end = time.time()
     print()
-    print(f"Found {len(scraper.pdfs.keys())} items in {round(end-start,2)}s after {scraper.requests_done} requests")
+    print(f"Found {len(scraper.valid_pdfs.keys())} items in {round(end-start,2)}s after {scraper.requests_done} requests")
     print("===RESULTS===")
-    print("\n".join([f"{name}: {link}" for name,link in scraper.pdfs.items()]))
-    #print("\n".join([f"\u001b]8;;{link}\u001b\\{name}\u001b]8;;\u001b\\" for name,link in scraper.pdfs.items()]))
+    print("\n".join([f"{name}: {link}" for name,link in scraper.valid_pdfs.items()]))
+    #print("\n".join([f"\u001b]8;;{link}\u001b\\{name}\u001b]8;;\u001b\\" for name,link in scraper.valid_pdfs.items()]))
 

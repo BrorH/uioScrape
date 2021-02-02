@@ -85,12 +85,14 @@ class LinkScrape:
     pdfs = {}
     valid_pdfs = {}
 
-    subject_subfaculty_dict = {"fys":"fys", "fys-mek":"fys", "in":"ifi", "mat":"math", "mek":"math", "ast":"astro", "kjm":"kjemi", "bios":"ibv", "bios-in":"ibv", "farm":"farmasi", "fys-stk":"fys", "mat-inf":"math"}
-    def __init__(self, subject,  max_requests, speed, quality_check):
+    subject_subfaculty_dict = {"fys":"fys", "fys-mek":"fys", "in":"ifi", "mat":"math", "mek":"math", "ast":"astro", "kjm":"kjemi", "bios":"ibv", "bios-in":"ibv", "farm":"farmasi", "fys-stk":"fys", "mat-inf":"math", "fys-mena":"fys", "geo-ast":"geofag", "geo-deep":"geofag", "geo":"geofag"}
+
+    def __init__(self, subject,  max_requests, speed, quality_check, tolerance):
         self.max_requests = max_requests
         self.requests_done = 0
         self.speed = speed
         self.quality_check = quality_check
+        self.tolerance = tolerance
         
 
         self.base_url = "https://www.uio.no/studier/emner/matnat/"
@@ -128,7 +130,7 @@ class LinkScrape:
 
                 if self.requests_done >= self.max_requests:
                     break
-                self.urls_to_be_checked = reorder_urls_by_priority(new_urls_to_be_checked.copy())
+                self.urls_to_be_checked = reorder_urls_by_priority(new_urls_to_be_checked.copy(), self.tolerance)
                 
         except KeyboardInterrupt:
             pass
@@ -422,6 +424,8 @@ parser.add_argument('SUBJECT', metavar='SUBJECT', nargs=1,
                     help='Subject code of a matnat subject. Case insensitive')
 parser.add_argument("-r", dest="requests",  metavar="requests", default=50, help="Maximum number of requests to make. Increase at own risk. Note that the actual number of requests will be higher than this if quality check is enabled. Default: 50")
 parser.add_argument("-s", dest="speed",  metavar="speed", default=0.1, help="Sleep time (s) between requests. Decrease at own risk to make search faster. Default: 0.1")
+parser.add_argument("-tol", dest="tolerance",  metavar="tolerance", default=80, help="Tolerance (%%) of how strict the sorting algorithm should be. Higher = less trict. Decrease when you get way to many un-intersting PDFs, and vice versa. Default: 80")
+
 parser.add_argument('--Q', action="store_true",
                     help='Quality check. Excludes PDFs that return 404 responses. Will increase time and number of requests. Recommended if many of the returned PDFs return empty pages')
 
@@ -434,9 +438,10 @@ if __name__ == '__main__':
     speed =float(args.speed)
     quality = bool(args.Q)
     subject = args.SUBJECT[0]
+    tolerance = int(args.tolerance)
     start = time.time()
     #sys.exit()
-    scraper = LinkScrape(subject = subject,  max_requests = max_requests, speed=speed, quality_check = quality)
+    scraper = LinkScrape(subject = subject,  max_requests = max_requests, speed=speed, quality_check = quality, tolerance = tolerance)
     scraper.start()
     end = time.time()
     print()

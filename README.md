@@ -21,6 +21,7 @@ The search can be stopped at any time by pressing ctrl+C.
     - [x] Some links are commonly uninteresting across all semester page
 - [x] add smarter pdf-quality check.
 - [x] add option for quality pdf check
+- [ ] improve "priority"-evaulation so as to completely remove urls/pdfs with uninteresting names
 - [ ] add auto-download option
 - [x] add wider command-line argument support
 - [x] add a request-throttle so as to prevent stress on uio server

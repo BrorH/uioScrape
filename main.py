@@ -49,13 +49,6 @@ class Url(str):
     def __class__(self):
         return str
     
-    # def __eq__(self, other):
-    #     #if not isinstance(other, Url):
-    #     print(type(other), other)
-    #     try:
-    #         return self.url == other.url and self.parent == other.parent
-    #     except AttributeError:
-    #         return False
 
     def __hash__(self):
         return hash(self.url)
@@ -333,8 +326,6 @@ def relative_to_absolute_url(link, parent_url):
 
 
 
-#HTML_MAIN_BODY_REGEX = r"(?s)<div id=\"main\" role=\"main\">(.*)<div id=\"bottomnav\" role=\"navigation\">"
-#HTML_MAIN_LEFT_BODY_REGEX = re.compile(r"(?s)<a class=\"vrtx-marked\"[^>]*>(?:(?!</a>).)*</a>\s*<ul>\s*(.*?)\s*</ul>", re.IGNORECASE)
 HTML_MAIN_LEFT_BODY_REGEX = re.compile(r"(?s)(<li class=\"vrtx-child\"><a class=\"vrtx-marked\"(?:.*?)</li>)", re.IGNORECASE)
 course_index_left_menu_regex = re.compile(r"(?s)<a class=\"vrtx-marked\"(?:.*?)</a>(?:.*?)<ul>(.*?)</ul>", re.IGNORECASE)
 course_left_menu_regex = re.compile(r"<a href=\"([^\"^#^@^\?]*)\"[^>]*>")

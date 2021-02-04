@@ -1,6 +1,6 @@
 from html.parser import HTMLParser
 import http.client
-import re, sys, requests, threading, itertools, time, argparse
+import re, sys, requests, threading, itertools, time, argparse, os
 from urllib import request
 import urllib.error
 from downloading import download_pdf
@@ -9,20 +9,21 @@ import numpy as np
 
 semester_exam_index_remover_regex = re.compile(r"(?s)(?:.*?)/[vh]\d{2}/eksamen/", re.IGNORECASE)
 
-global ignore_urls, disqualifiers, num_requests, priorities
+global ignore_urls, disqualifiers, num_requests, priorities # most of these can be removed, i just cant be bothered rn
 #todo: add more elegant way of importing these values, through np.loadtxt
-with open("ignores.txt", "r") as file:
+with open(os.path.relpath("src/ignores.txt"), "r") as file:
     ignore_urls = [foo.rstrip() for foo in file.readlines()[1:]]
-with open("disqualifiers.txt", "r") as file:
+with open(os.path.relpath("src/disqualifiers.txt"), "r") as file:
     disqualifiers = [foo.rstrip() for foo in file.readlines()[1:]]
 priorities = {}
-with open("priorities.txt", "r") as file:
+with open(os.path.relpath("src/priorities.txt"), "r") as file:
     for line in sorted(file.readlines(), key=len):
         words = line.rstrip().split()
         priorities[words[0]] = int(words[-1])
-# list of strings which will automaticall disqualify a pdf from being stored
+
+# list of strings which will automatically disqualify a pdf from being stored
 #ignore_pdfs = ["devilry","lecture", "smittevern", "Lecture", "oblig", "week", "Week", "exercise", "Oblig", "ukesoppgave", "Ukesoppgave", "oppgave", "Oppgave"]
-ignore_pdfs = ["poop"]
+ignore_pdfs = ["currently disabled"]
 num_requests = 0
 
 class Url(str):

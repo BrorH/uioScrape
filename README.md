@@ -22,13 +22,13 @@ The search can be stopped at any time by pressing ctrl+C.
 - [x] add smarter pdf-quality check.
 - [x] add option for quality pdf check
 - [ ] improve "priority"-evaulation so as to completely remove urls/pdfs with uninteresting names
-- [ ] add auto-download option
+- [x] add auto-download option
 - [ ] add wider command-line argument support
 - [x] add a request-throttle so as to prevent stress on uio server
-- [ ] store links in cache
-- [ ] store light version of semester websites in cachce and compare to current. Re-run scraper if versions do not match
+- [x] dont download already-downloaded pdfs and add uuid system to separate files of same names
 - [x] put everything into a class
 - [ ] print result in a prettier manner. Collect exams by semester and print pairwise (if possible)
 - [ ] eat pizza
 - [ ] add warning messages if user inputs parameters that may cause a high load on the servers
+- [ ] overall polishing
 

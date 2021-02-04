@@ -7,7 +7,7 @@ The search can be stopped at any time by pressing ctrl+C.
 
 ## Requriements:
 * python3.8 or higher
-* urllib, ratelimit, argparse, multiprocessing, numpy (let me know if I'm missing any)
+* urllib, ratelimit, argparse, multiprocessing, numpy, PyPDF2(let me know if I'm missing any)
 ## Usage:
 `python3 main.py subject`
 
@@ -23,7 +23,7 @@ The search can be stopped at any time by pressing ctrl+C.
 - [x] add option for quality pdf check
 - [ ] improve "priority"-evaulation so as to completely remove urls/pdfs with uninteresting names
 - [ ] add auto-download option
-- [x] add wider command-line argument support
+- [ ] add wider command-line argument support
 - [x] add a request-throttle so as to prevent stress on uio server
 - [ ] store links in cache
 - [ ] store light version of semester websites in cachce and compare to current. Re-run scraper if versions do not match

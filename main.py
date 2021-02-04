@@ -3,7 +3,7 @@ import http.client
 import re, sys, requests, threading, itertools, time, argparse
 from urllib import request
 import urllib.error
-# from multiprocessing import Queue
+from downloading import download_pdf
 import queue, _queue
 import numpy as np
 
@@ -21,7 +21,8 @@ with open("priorities.txt", "r") as file:
         words = line.rstrip().split()
         priorities[words[0]] = int(words[-1])
 # list of strings which will automaticall disqualify a pdf from being stored
-ignore_pdfs = ["devilry","lecture", "smittevern", "Lecture", "oblig", "week", "Week", "exercise", "Oblig", "ukesoppgave", "Ukesoppgave", "oppgave", "Oppgave"]
+#ignore_pdfs = ["devilry","lecture", "smittevern", "Lecture", "oblig", "week", "Week", "exercise", "Oblig", "ukesoppgave", "Ukesoppgave", "oppgave", "Oppgave"]
+ignore_pdfs = ["poop"]
 num_requests = 0
 
 class Url(str):
@@ -131,7 +132,7 @@ class LinkScrape:
                 if self.requests_done >= self.max_requests:
                     break
                 self.urls_to_be_checked = reorder_urls_by_priority(new_urls_to_be_checked.copy(), self.tolerance)
-                
+        
         except KeyboardInterrupt:
             pass
         if self.quality_check:
@@ -139,6 +140,7 @@ class LinkScrape:
         else:
             self.valid_pdfs = self.pdfs
         
+        self.valid_pdfs = {k: v for k, v in sorted(self.valid_pdfs.items(), reverse=True, key=lambda item: item[1])}
 
         
     def purge_404(self):
@@ -291,7 +293,7 @@ class LinkScrape:
         return res
 
 
-def reorder_urls_by_priority(urls, tolerance=80):
+def reorder_urls_by_priority(urls, tolerance=100):
     # tolerance is how many percent of the urls are to be returned
     global priorities
 
@@ -428,7 +430,8 @@ parser.add_argument("-tol", dest="tolerance",  metavar="tolerance", default=80, 
 
 parser.add_argument('--Q', action="store_true",
                     help='Quality check. Excludes PDFs that return 404 responses. Will increase time and number of requests. Recommended if many of the returned PDFs return empty pages')
-
+parser.add_argument('--d', action="store_true",
+                    help='Enable downloading. If passed you will get the option to download the pdfs in bulk after the program is run')
 
 
 
@@ -437,16 +440,43 @@ if __name__ == '__main__':
     max_requests = int(args.requests)
     speed =float(args.speed)
     quality = bool(args.Q)
+    download = bool(args.d)
     subject = args.SUBJECT[0]
     tolerance = int(args.tolerance)
     start = time.time()
-    #sys.exit()
     scraper = LinkScrape(subject = subject,  max_requests = max_requests, speed=speed, quality_check = quality, tolerance = tolerance)
     scraper.start()
     end = time.time()
     print()
     print(f"Found {len(scraper.valid_pdfs.keys())} items in {round(end-start,2)}s after {scraper.requests_done} requests")
     print("===RESULTS===")
-    print("\n".join([f"{name}: {link}" for name,link in scraper.valid_pdfs.items()]))
+    print("\n".join([f"#{i+1} {name}: {link}" for i, (name,link) in enumerate(scraper.valid_pdfs.items())]))
+    print("=============")
     #print("\n".join([f"\u001b]8;;{link}\u001b\\{name}\u001b]8;;\u001b\\" for name,link in scraper.valid_pdfs.items()]))
+    if download:
+        print("Which PDFs do you want to download? (pass # sep. by space, or write 'all' to download all)")
+        uin = input(">>")
+        subject = scraper.subject_code
+        if len(uin.split(" ")) == 1:
+            if "all" in uin.lower():
+                for name,url in scraper.valid_pdfs.items():
+                    try:
+                        download_pdf(url, name, subject)
+                    except:
+                        print(f"Unable to download \u001b]8;;{url}\u001b\\{name}\u001b]8;;\u001b\\")
+            print("\nDownloading done!"+" "*20)
+        else:
+            for num in uin.split(" "):
+                try: 
+                    num = int(num)
+                    assert 0<num <= len(scraper.valid_pdfs.keys())
+                except:
+                    print("error")
+                name,url= list(scraper.valid_pdfs.items())[num-1]
+                try:
+                    download_pdf(url, name, subject)
+                except:
+                    print(f"Unable to download \u001b]8;;{url}\u001b\\{name}\u001b]8;;\u001b\\")
+        
+            print("\nDownloading done!" + " "*20)
 

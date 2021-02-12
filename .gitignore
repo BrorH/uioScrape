@@ -3,3 +3,5 @@ __pycache__/*
 *.pdf
 downloads/*
 downloads/
+mnt/*
+mnt/

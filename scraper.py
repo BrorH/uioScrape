@@ -63,7 +63,7 @@ def download_subject(subject):
                 filename = str(filename).rstrip(".pdf") 
                 assert occurances > 0, "I mean, if this gets called, you really fucked up"
                 if occurances > 0:
-                    filename += f"({occurances})"
+                    filename += f"_{occurances}"
                 
             dl_pathglob_names.append(filename)
             filename+=".pdf"

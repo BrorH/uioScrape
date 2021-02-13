@@ -7,7 +7,22 @@ The search can be stopped at any time by pressing ctrl+C.
 
 ## Requriements:
 * python3.8 or higher
-* urllib, ratelimit, argparse, multiprocessing, numpy, PyPDF2(let me know if I'm missing any)
+* numpy
+* wdfs
+
+### How to installl wdfs
+
+sudo apt-get install checkinstall libfuse-dev libneon27 libneon27-dev
+sudo apt-get install python-fuse fuse-utils
+
+wget http://noedler.de/projekte/wdfs/wdfs-1.4.2.tar.gz
+tar xzvf wdfs-1.4.2.tar.gz
+cd wdfs-1.4.2
+./configure
+sudo checkinstall
+sudo dpkg -i wdfs_1.4.2-1_*.deb
+
+
 ## Usage:
 `python3 main.py subject`
 

@@ -5,9 +5,9 @@ import sys
 import time
 from pathlib import Path
 import re
-
+import argparse
+from credentials import dav_login
 import numpy as np
-
 
 def get_hash_from_file(path):
     # returns a unique utf-8 encoded hash of pdf at given path
@@ -80,8 +80,11 @@ def download_subject(subject):
 def mount_webdav(url):
     # mounts the url into the mnt/ dir
     subprocess.run(["mkdir", "-p", "mnt"])
-    print("Please enter UiO username and password")
-    subprocess.run(["wdfs", url, "mnt"])
+    if os.path.isfile(".credentials"):
+        dav_login(url)
+    else:
+        print("Please enter UiO username and password. (Run credentials.py in order to set up a 4 digit pin to avoid having to enter username/password every time)")
+        subprocess.run(["wdfs", url, "mnt"])
     print("Mounting.. Please wait")
     time.sleep(5)
     print("succesfully mounted into ./mnt")
@@ -118,10 +121,18 @@ def scraper(subject):
         unmount_webdav()
         raise Exception
 
-if __name__ == "__main__":
+
+parser = argparse.ArgumentParser(description='Scrape all semester pages of a UiO subject in order to get the urls of PDFs of old exams and their solutions.\n Made by Bror Hjemgaard, 2021')
+parser.add_argument('SUBJECT', metavar='SUBJECT', nargs=1,
+                    help='Subject code of any UiO subject. Case insensitive')
+    
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+    subject = args.SUBJECT[0]
 
     try:
-        scraper(sys.argv[1])
+        scraper(subject)
     except KeyboardInterrupt:
-        pass
+        print("terminating...")
         unmount_webdav()

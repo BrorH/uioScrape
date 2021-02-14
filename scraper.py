@@ -55,8 +55,8 @@ def download_subject(subject):
         filename = re.findall(filename_count_re, str(file.name))[0][0]# strip .pdf extension in order to compare count number
         if hashed_file not in hash_arr:
             # if this succeeds, then the pdf is unique and will be downloaded
-            if "lecture" in filename: continue
-            if "notes" in filename: continue
+            if "lect" in filename: continue
+            if "not" in filename: continue
             if filename in dl_pathglob_names:
                 print("found", filename)
                 occurances = sum([filename == foo for foo in dl_pathglob_names])
@@ -68,7 +68,7 @@ def download_subject(subject):
             dl_pathglob_names.append(filename)
             filename+=".pdf"
             
-            subprocess.run(["cp", file, f"{dl_dir}/{filename}"])
+            subprocess.run(["cp","-p", file, f"{dl_dir}/{filename}"])
             print(f" Downloaded {file}: {hashed_file}")
             time.sleep(0.1)
             hash_arr.append(hashed_file)

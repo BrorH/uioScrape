@@ -76,24 +76,11 @@ if __name__ == "__main__":
     print("Enter UiO Password:")
     p = getpass(">>")
     pin = prompt_creds()
-    # print("Enter a pin of choice to be used to acces UiOScrape. Must be 4 or more unicode chars")
-    # pin = ""
-    # while True:
-    #     pin_ = getpass(">>")
-    #     print("Enter again to confirm")
-    #     pin = getpass(">>")
-    #     if pin != pin_:
-    #         print("ERROR! Pins dont match.")
-    #         print("Enter a pin of choice to be used to acces UiOScrape. Must be 4 or more unicode chars")
-
-    #         continue
-    #     if len(pin) >= 4: break 
-    #     print("Criteria not met")
 
 
     token = password_encrypt(p.encode(), pin)
     with open("./.credentials", "w+") as file:
         file.write(uname +"\n")
         file.write(token.decode("utf-8"))
-    print("Done! You may now attempt to log in")
+    print("Done! You may now attempt to use UiOScrape with your pin!")
  

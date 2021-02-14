@@ -5,3 +5,4 @@ downloads/*
 downloads/
 mnt/*
 mnt/
+.credentials

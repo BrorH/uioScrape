@@ -53,7 +53,7 @@ Requires [wdfs](https://github.com/jmesmon/wdfs) (1.4.2 or later):
 `wget http://noedler.de/projekte/wdfs/wdfs-1.4.2.tar.gz`
 `tar xzvf wdfs-1.4.2.tar.gz`
 `cd wdfs-1.4.2`
-`./configure`
+`./configure`\
 `sudo checkinstall`
 `sudo dpkg -i wdfs_1.4.2-1_*.deb`
 
@@ -101,7 +101,7 @@ Yes! While not currently fully implemented, there will soon be an option to perf
 No. However, common sense applies; dont behave inappropriately or be an idiot and everything will be fine. These files are available to all UiO students, this program just quickly and neatly collects them.
 
 ### *When will you eat 🍕*?
-They day when I wont have to google regex syntaxing, I'll allow myself a slice
+The day when I wont have to google regex syntaxing, I'll allow myself a slice
 
   
 

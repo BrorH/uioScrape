@@ -47,14 +47,14 @@ Requires [wdfs](https://github.com/jmesmon/wdfs) (1.4.2 or later):
 **HOW TO INSTALL WDFS**:  
 (tutorial kindly stolen verbatim from [Khurshid Alam](https://askubuntu.com/questions/254241/gnote-tomboy-webdav-connecting-error) on askubuntu.com)
 
-`sudo apt-get install checkinstall libfuse-dev libneon27 libneon27-dev`
+`sudo apt-get install checkinstall libfuse-dev libneon27 libneon27-dev`\
 `sudo apt-get install python-fuse fuse-utils`
 
-`wget http://noedler.de/projekte/wdfs/wdfs-1.4.2.tar.gz`
-`tar xzvf wdfs-1.4.2.tar.gz`
-`cd wdfs-1.4.2`
+`wget http://noedler.de/projekte/wdfs/wdfs-1.4.2.tar.gz`\
+`tar xzvf wdfs-1.4.2.tar.gz`\
+`cd wdfs-1.4.2`\
 `./configure`\
-`sudo checkinstall`
+`sudo checkinstall`\
 `sudo dpkg -i wdfs_1.4.2-1_*.deb`
 
 [Clone](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository) the repo. 

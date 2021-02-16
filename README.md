@@ -4,8 +4,6 @@
 ## Table of contents
 - [UiOScrape](#uioscrape)
   - [Table of contents](#table-of-contents)
-  - [General info](#general-info)
-  - [Technologies](#technologies)
 - [Installing](#installing)
   - [Windows](#windows)
   - [MacOS](#macos)
@@ -24,14 +22,6 @@
   - [Status](#status)
   - [Contact](#contact)
 
-## General info
-Add more general information about project. What the purpose of the project is? Motivation?
-
-
-## Technologies
-* Tech 1 - version 1.0
-* Tech 2 - version 2.0
-* Tech 3 - version 3.0
 
 # Installing
 ## Windows

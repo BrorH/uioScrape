@@ -21,6 +21,14 @@ def _derive_key(password: bytes, salt: bytes, iterations: int = iterations) -> b
         iterations=iterations, backend=backend)
     return b64e(kdf.derive(password))
 
+
+def password_decrypt(token: bytes, password: str) -> bytes:
+    decoded = b64d(token)
+    salt, iter, token = decoded[:16], decoded[16:20], b64e(decoded[20:])
+    iterations = int.from_bytes(iter, 'big')
+    key = _derive_key(password.encode(), salt, iterations)
+    return Fernet(key).decrypt(token)
+
 def password_encrypt(message: bytes, password: str, iterations: int = iterations) -> bytes:
     salt = secrets.token_bytes(16)
     key = _derive_key(password.encode(), salt, iterations)
@@ -32,22 +40,13 @@ def password_encrypt(message: bytes, password: str, iterations: int = iterations
         )
     )
 
-def password_decrypt(token: bytes, password: str) -> bytes:
-    decoded = b64d(token)
-    salt, iter, token = decoded[:16], decoded[16:20], b64e(decoded[20:])
-    iterations = int.from_bytes(iter, 'big')
-    key = _derive_key(password.encode(), salt, iterations)
-    return Fernet(key).decrypt(token)
-
-
 def dav_login(url):
     with open(".credentials", "r+") as file: 
         uname, p_token = tuple(file.readlines())
     for i in range(3):
         pin = getpass("Enter pin >>")
         try:
-            subprocess.run(["wdfs", url, "mnt", "-o", "username="+uname, "-o", "password="+password_decrypt(p_token.encode("utf-8"), pin).decode()])
-            break
+            return ["-o", "username="+uname, "-o", "password="+password_decrypt(p_token.encode("utf-8"), pin).decode()]
         except cryptography.fernet.InvalidToken:
             
             print(f"Wrong pin [{i+1}/3]")

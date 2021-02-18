@@ -9,7 +9,7 @@
   - [Windows](#windows)
   - [MacOS](#macos)
   - [Linux](#linux)
-      - [**HOW TO INSTALL WDFS**:](#how-to-install-wdfs)
+      - [HOW TO INSTALL WDFS:](#how-to-install-wdfs)
 - [Usage](#usage)
   - [scraper.py](#scraperpy)
   - [credentials.py](#credentialspy)
@@ -34,14 +34,14 @@ pray to GNU and follow [Linux](#linux) guide
    - numpy:  `$ pip install numpy`
    - cryptography: `$ pip install cryptography`   
 
-2. [Install wdfs](#HOW-TO-INSTALL-WDFS)
+2. [Install wdfs](#how-to-install-wdfs)
 3. [Clone](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository) the repo.  
 
 <br>  
 
-#### **HOW TO INSTALL WDFS**:  
+#### HOW TO INSTALL WDFS:  
 [wdfs](https://github.com/jmesmon/wdfs) is a Web-Dav filesharing system required by UiOScrape to work:  
-(tutorial kindly stolen verbatim from [Khurshid Alam](https://askubuntu.com/questions/254241/gnote-tomboy-webdav-connecting-error) on askubuntu.com)
+(tutorial kindly stolen verbatim from [Khurshid Alam](https://askubuntu.com/questions/254241/gnote-tomboy-webdav-connecting-error))
 
 `sudo apt-get install checkinstall libfuse-dev libneon27 libneon27-dev`\
 `sudo apt-get install python-fuse fuse-utils`
@@ -96,7 +96,8 @@ Running this script and following the instructions will allow you to use a pin-c
 #
 ## FAQ
 ### *Why does the program ask me to log in with my UiO account?*
-As a UiO student you are granted access to the course pages of most semester pages of most subjects. Simply telling the UiO servers that you are indeed a student grants you the ability to view and download resources that do not appear publicly on the semester web pages.
+As a UiO student you are granted access to the course pages of most semester pages of most subjects. Simply telling the UiO servers that you are indeed a student grants you the ability to view and download resources that do not appear publicly on the semester web pages.  
+The great thing about open source is that you can confirm for yourself that the scraper does nothing dubious with your credentials.
 
 ### *Ummm, ok is there a "no-login" option?*
 Yes! While not currently fully implemented, there will soon be an option to perform classic web-scraping of the html pages of each semester course. While this scraping allows _anyone_ to scrape for pdfs this method is slow, resource heavy, has **very** ugly code and most importantly *it **can't** find* the above mentioned non-public files (which are often the most juicy ones 😉)

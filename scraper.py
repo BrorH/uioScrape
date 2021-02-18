@@ -1,13 +1,17 @@
+import argparse
+import atexit
 import hashlib
 import os
+import re
 import subprocess
 import sys
 import time
 from pathlib import Path
-import re
-import argparse
-from credentials import dav_login
+
 import numpy as np
+
+from mounter import *
+
 
 def get_hash_from_file(path):
     # returns a unique utf-8 encoded hash of pdf at given path
@@ -44,12 +48,11 @@ def download_subject(subject):
         subprocess.run(["mkdir", "-p", dl_dir])
 
     hash_arr = list(generate_hash_file(dl_dir, store=False)) # create an empty hash file and get an empty list of correct length
-    mnt_pathglob = list(Path('./mnt/').rglob('*.pdf'))
-    #mnt_pathglob = list(Path('./downloads/dl_FYS3120/').rglob('*.pdf'))
+    mnt_pathglob = list(Path('./.mnt/').rglob('*.pdf'))
     dl_pathglob = list(Path(dl_dir).rglob('*.pdf'))
     dl_pathglob_names = [re.findall(filename_count_re, file.name)[0][0] for file in dl_pathglob] # get names without extension or count number (#)
-    print(dl_pathglob_names)
     for file in mnt_pathglob:
+        print_suffix = ""
         hashed_file = get_hash_from_file(file)
         
         filename = re.findall(filename_count_re, str(file.name))[0][0]# strip .pdf extension in order to compare count number
@@ -58,46 +61,25 @@ def download_subject(subject):
             if "lect" in filename: continue
             if "not" in filename: continue
             if filename in dl_pathglob_names:
-                print("found", filename)
                 occurances = sum([filename == foo for foo in dl_pathglob_names])
                 filename = str(filename).rstrip(".pdf") 
                 assert occurances > 0, "I mean, if this gets called, you really fucked up"
                 if occurances > 0:
                     filename += f"_{occurances}"
+                print_suffix = "(Added suffix due to existing filename)"
                 
             dl_pathglob_names.append(filename)
             filename+=".pdf"
             
             subprocess.run(["cp","-p", file, f"{dl_dir}/{filename}"])
-            print(f" Downloaded {file}: {hashed_file}")
+            print(f"Downloaded {filename}.pdf" + print_suffix)
             time.sleep(0.1)
             hash_arr.append(hashed_file)
         else:
             pass
-            print(f"Skipped {file}: {hashed_file}")
+            print(f"(Duplicate) Skipped {filename}.pdf")
     generate_hash_file(dl_dir)
    
-def mount_webdav(url):
-    # mounts the url into the mnt/ dir
-    subprocess.run(["mkdir", "-p", "mnt"])
-    if os.path.isfile(".credentials"):
-        dav_login(url)
-    else:
-        print("Please enter UiO username and password. (Run credentials.py in order to set up a 4 digit pin to avoid having to enter username/password every time)")
-        subprocess.run(["wdfs", url, "mnt"])
-    print("Mounting.. Please wait")
-    time.sleep(5)
-    print("succesfully mounted into ./mnt")
-    
-    
-    
-def unmount_webdav():
-    # unmounts the mnt/ dir
-    time.sleep(0.5)
-    subprocess.run((["mount", "-a"]))
-    time.sleep(0.5) # some sleeping, as it makes the unmouning more reliant
-    subprocess.run(["fusermount", "-u", "mnt/"])
-    print("Unmounting process finished")
 
 
 
@@ -113,13 +95,12 @@ def scraper(subject):
         print(f"Subject '{subject}' not found")
         sys.exit(1)
 
+    init_mountcheck()
+    atexit.register(unmount_webdav)
     mount_webdav(dav_url) 
-    try:
-        download_subject(subject)
-        unmount_webdav()
-    except:
-        unmount_webdav()
-        raise Exception
+    download_subject(subject)
+    atexit.unregister(unmount_webdav)
+    unmount_webdav()
 
 
 parser = argparse.ArgumentParser(description='Scrape all semester pages of a UiO subject in order to get the urls of PDFs of old exams and their solutions.\n Made by Bror Hjemgaard, 2021')
@@ -131,8 +112,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     subject = args.SUBJECT[0]
 
-    try:
-        scraper(subject)
-    except KeyboardInterrupt:
-        print("terminating...")
-        unmount_webdav()
+    scraper(subject)
+    

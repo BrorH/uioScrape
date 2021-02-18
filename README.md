@@ -28,7 +28,7 @@
 ## Windows
 ahahahaha
 ## MacOS
-pray to GNU and follow [Linux](#Linux) guide
+pray to GNU and follow [Linux](#linux) guide
 ## Linux
 1. Requires **Python3.8 or later**  as well as the modules
    - numpy:  `$ pip install numpy`
@@ -61,10 +61,10 @@ pray to GNU and follow [Linux](#Linux) guide
 # Usage
  
 ## scraper.py
-It's easy! Just run the python script and pass any UiO subject as the first and only argument. Example:  
+Run the python script and pass any UiO subject as the first and only argument. Example:  
 `python3.8 FYS-MEK1110`  
 The subject code is case-insensitive.  
-You will be asked to enter your UiO username and password ([why](##FAQ)?). You will have to enter these credentials everytime you run the scraper, unless you setup a pin-code. See [credentials.py](##credentials.py).  
+You will be asked to enter your UiO username and password ([why](#faq)?). You will have to enter these credentials everytime you run the scraper, unless you setup a pin-code. See [credentials.py](#credentialspy).  
 As of now (almost) all pdfs are downloaded into a ./downloads dir in the cloned repo. Future versions will feature more controllable downloading options and filtering methods.  
 NOTE: When stopping the program mid-scrape, plese only press "ctrl+C" (or equivalent) __one time__ only, as the program needs to safely unmount after a scrape.
 If you did not do this, the program will automatically clean up after you next time you run it, but it may cause some issues (nothing serious) if you act careless

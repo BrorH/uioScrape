@@ -62,7 +62,7 @@ pray to GNU and follow [Linux](#linux) guide
  
 ## scraper.py
 Run the python script and pass any UiO subject as the first and only argument. Example:  
-`python3.8 FYS-MEK1110`  
+`python3.8 scaper.py FYS-MEK1110`  
 The subject code is case-insensitive.  
 You will be asked to enter your UiO username and password ([why](#faq)?). You will have to enter these credentials everytime you run the scraper, unless you setup a pin-code. See [credentials.py](#credentialspy).  
 As of now (almost) all pdfs are downloaded into a ./downloads dir in the cloned repo. Future versions will feature more controllable downloading options and filtering methods.  

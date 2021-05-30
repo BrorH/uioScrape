@@ -37,7 +37,7 @@ pray to GNU and follow [Linux](#linux) guide
 
 <br>  
 
-#### HOW TO INSTALL WDFS:  
+#### HOW TO INSTALL WDFS  
 [wdfs](https://github.com/jmesmon/wdfs) is a Web-Dav file sharing system required by UiOScrape to work:  
 (tutorial kindly stolen verbatim from [Khurshid Alam](https://askubuntu.com/questions/254241/gnote-tomboy-webdav-connecting-error))
 

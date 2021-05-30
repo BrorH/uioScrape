@@ -85,7 +85,6 @@ Running this script and following the instructions will allow you to use a pin-c
 - [ ] Download specific files only
 - [ ] Add smart filter which detects only specific file types (i.e exams or oblig) 
 - [ ] Eat 🍕
-- [ ] Group results in a prettier manner
 - [ ] bugsbugsbugs
 
 ### To-done list:
@@ -93,6 +92,7 @@ Running this script and following the instructions will allow you to use a pin-c
 - [x] Basic password/pin system for credential storage 
 - [x] Implement hashing/UUID system to assert no file is downloaded twice. 
 - [x] Safer unmouting system
+- [x] Group results in a prettier manner
     
 #
 ## FAQ

@@ -3,8 +3,6 @@
 > Finds published and unpublished files from the UiO servers. Great for exam studying
 
 ## Table of contents
-- [UiOScrape](#uioscrape)
-  - [Table of contents](#table-of-contents)
 - [Installing](#installing)
   - [Windows](#windows)
   - [MacOS](#macos)

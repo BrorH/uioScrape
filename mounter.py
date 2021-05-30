@@ -13,7 +13,7 @@ def mount_webdav(url):
     if os.path.isfile(".credentials"):
         mount_args += dav_login(url)
     else:
-        print("Please enter UiO username and password. (Run credentials.py in order to set up a 4 digit pin to avoid having to enter username/password every time)")
+        print("Please enter UiO username and password. (Run credentials.py in order to set up a pin to avoid having to enter username/password every time)")
     subprocess.run(["mkdir", "-p", ".mnt"])
     subprocess.run(mount_args)
     print("Mounting...")
@@ -21,12 +21,17 @@ def mount_webdav(url):
         time.sleep(0.5)
     print("Mounting successful")
     
-    
+class mountcolors:
+    OKGREEN = '\033[92m'
+    ALERT = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'  
 
 def unmount_webdav():
     # performs a safe unmount
     
-    print("Unmounting")
+    print(f"{mountcolors.ALERT}{mountcolors.BOLD}Unmounting. Please wait for process to finish! Program will exit when done!{mountcolors.ENDC}")
     FNULL = open(os.devnull, 'w')
     subprocess.run(["mount", "-a"])
     time.sleep(0.1)
@@ -46,7 +51,7 @@ def unmount_webdav():
             subprocess.run(["mount", "-a"])
             time.sleep(0.5)
     subprocess.run(["rmdir", ".mnt"])
-    print("Done!")
+    print(f"{mountcolors.OKGREEN}{mountcolors.BOLD}Done!{mountcolors.ENDC}")
 
 def init_mountcheck():
     # called at scraper initialization to ensure that nothing is already mounted

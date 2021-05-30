@@ -6,4 +6,5 @@ downloads/
 mnt/*
 mnt/
 .credentials
+old/*
 old/

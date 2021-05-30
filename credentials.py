@@ -70,6 +70,8 @@ def prompt_creds():
 
 
 if __name__ == "__main__":
+    print(f"This script lets you generate an encrypted pin for UiOScrape, instead of having to provide your full username and password each time.\nThe encrypted file is stored locally. \nA pin is not reccomended if you are not the only user of this computer.")
+    print(f"UiOScrape is open source, meaning you can check for yourself that nothing suspicious is happening to your stored credentials.\nThis solution is meant for those who intend to frequenctly use UiOScrape whilst not want to be interrupted by credential prompts.\n")
     print("Enter UiO Username:")
     uname = input(">>")
     print("Enter UiO Password:")

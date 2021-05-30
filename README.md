@@ -7,7 +7,7 @@
   - [Windows](#windows)
   - [MacOS](#macos)
   - [Linux](#linux)
-      - [HOW TO INSTALL WDFS:](#how-to-install-wdfs)
+      - [HOW TO INSTALL WDFS](#how-to-install-wdfs)
 - [Usage](#usage)
   - [scraper.py](#scraperpy)
   - [credentials.py](#credentialspy)

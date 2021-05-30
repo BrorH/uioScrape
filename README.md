@@ -1,6 +1,6 @@
 # UiOScrape
 > Effortlessly extract exams, exam solutions, lectures, exercises etc. from old lecture pages of any UiO subject.  
-> Finds unpublished files from the UiO servers. Great for exam studying
+> Finds published and unpublished files from the UiO servers. Great for exam studying
 
 ## Table of contents
 - [UiOScrape](#uioscrape)
@@ -40,7 +40,7 @@ pray to GNU and follow [Linux](#linux) guide
 <br>  
 
 #### HOW TO INSTALL WDFS:  
-[wdfs](https://github.com/jmesmon/wdfs) is a Web-Dav filesharing system required by UiOScrape to work:  
+[wdfs](https://github.com/jmesmon/wdfs) is a Web-Dav file sharing system required by UiOScrape to work:  
 (tutorial kindly stolen verbatim from [Khurshid Alam](https://askubuntu.com/questions/254241/gnote-tomboy-webdav-connecting-error))
 
 `sudo apt-get install checkinstall libfuse-dev libneon27 libneon27-dev`\
@@ -64,16 +64,16 @@ pray to GNU and follow [Linux](#linux) guide
 Run the python script and pass any UiO subject as the first and only argument. Example:  
 `python3.8 scaper.py FYS-MEK1110`  
 The subject code is case-insensitive.  
-You will be asked to enter your UiO username and password ([why](#faq)?). You will have to enter these credentials everytime you run the scraper, unless you setup a pin-code. See [credentials.py](#credentialspy).  
+You will be asked to enter your UiO username and password ([why](#faq)?). You will have to enter these credentials every time you run the scraper, unless you setup a pin-code. See [credentials.py](#credentialspy).  
 As of now (almost) all pdfs are downloaded into a ./downloads dir in the cloned repo. Future versions will feature more controllable downloading options and filtering methods.  
 It is worth noting that the downloading gets exponentially faster, as the system needs time to finish mounting.   
-NOTE: When stopping the program mid-scrape, plese only press "ctrl+C" (or equivalent) __one time__ only, as the program needs to safely unmount after a scrape.
+NOTE: When stopping the program mid-scrape, please only press "ctrl+C" (or equivalent) __one time__ only, as the program needs to safely unmount after a scrape.
 If you did not do this, the program will automatically clean up after you next time you run it, but it may cause some issues (nothing serious) if you act careless
 
 
 
 ## credentials.py
-Running this script and following the instructions will allow you to use a pin-code instead of your UiO credentials every time by encrypting and storing your credentials. If you are the main user of your computer this should not be a problem. However for multi-user systems, this is not recommended. This is similar to the git-credentials approach of achieving seemless login, (which surprisingly just stores your password plaintext!)
+Running this script and following the instructions will allow you to use a pin-code instead of your UiO credentials every time by encrypting and storing your credentials. If you are the main user of your computer this should not be a problem. However for multi-user systems, this is not recommended. This is similar to the git-credentials approach of achieving seamless login, (which surprisingly just stores your password plaintext!)
 
   
 
@@ -83,7 +83,7 @@ Running this script and following the instructions will allow you to use a pin-c
 - [ ] Add autocomplete for all subjects via command line
 - [ ] Chose which files from a scrape to be downloaded
 - [ ] Download specific files only
-- [ ] Add smart filter which detects only specific file types (i.e exams or oblig) 
+- [ ] Add smart filter which detects only specific file types (i.e exams or obligs) 
 - [ ] Eat 🍕
 - [ ] bugsbugsbugs
 

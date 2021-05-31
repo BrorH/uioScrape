@@ -4,6 +4,10 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 apt-get install checkinstall libfuse-dev libneon27 libneon27-dev python-fuse fuse-utils -y
-cd src/wdfs-1.4.2
+cd src
+wget http://noedler.de/projekte/wdfs/wdfs-1.4.2.tar.gz
+tar xzvf wdfs-1.4.2.tar.gz
+cd wdfs-1.4.2
 ./configure && make
 make install
+rm ../wdfs-1.4.2.tar.gz

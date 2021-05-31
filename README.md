@@ -61,7 +61,7 @@ Running this script and following the instructions will allow you to use a pin-c
 - [ ] Add Windows / MacOS support
 - [ ] Add more command line arguments, like max downloads, max size downloads, etc
 - [ ] Add autocomplete for all subjects via command line
-- [ ] Safer unmounting system
+- [ ] Saferer unmounting system
 - [ ] Add smart filter which detects only specific file types (i.e exams or obligs) 
 - [ ] Eat 🍕
 - [ ] bugsbugsbugs

@@ -7,7 +7,6 @@
   - [Windows](#windows)
   - [MacOS](#macos)
   - [Linux](#linux)
-      - [HOW TO INSTALL WDFS](#how-to-install-wdfs)
 - [Usage](#usage)
   - [scraper.py](#scraperpy)
   - [credentials.py](#credentialspy)
@@ -28,32 +27,12 @@ ahahahaha
 ## MacOS
 pray to GNU and follow [Linux](#linux) guide
 ## Linux
-1. Requires **Python3.8 or later**  as well as the modules
-   - numpy:  `$ pip install numpy`
-   - cryptography: `$ pip install cryptography`   
-
-2. [Install wdfs](#how-to-install-wdfs)
-3. [Clone](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository) the repo.  
+1. Requires **Python3.8 or later**  as well as the modules `numpy` and `cryptography`:
+   - `$ pip install numpy cryptography`
+3. [Clone](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository) this repo.  
+2. Run `install` as root, i.e  `$ sudo ./install`
 
 <br>  
-
-#### HOW TO INSTALL WDFS  
-[wdfs](https://github.com/jmesmon/wdfs) is a Web-Dav file sharing system required by UiOScrape to work:  
-(tutorial kindly stolen verbatim from [Khurshid Alam](https://askubuntu.com/questions/254241/gnote-tomboy-webdav-connecting-error))
-
-`sudo apt-get install checkinstall libfuse-dev libneon27 libneon27-dev`\
-`sudo apt-get install python-fuse fuse-utils`
-
-`wget http://noedler.de/projekte/wdfs/wdfs-1.4.2.tar.gz`\
-`tar xzvf wdfs-1.4.2.tar.gz`\
-`cd wdfs-1.4.2`\
-`./configure`\
-`sudo checkinstall`\
-`sudo dpkg -i wdfs_1.4.2-1_*.deb`
-
-
-
-
 
 
 # Usage

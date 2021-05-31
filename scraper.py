@@ -89,7 +89,7 @@ def download_subject(subject):
         filename = re.findall(filename_count_re, str(file.name))[0][0]# strip .pdf extension in order to compare count number
         if hashed_file not in hash_arr:
             # if this succeeds, then the pdf is unique and will be downloaded
-            for ignore in args.i:
+            for ignore in ignores:
                 if ignore in filename.lower(): 
                     print(print_prefix+ f"{bcolors.WARNING} Skipped {bcolors.ENDC} {filename}.pdf: Ignored")
                     skip = True
@@ -162,5 +162,9 @@ parser.add_argument("-i", metavar="expr",nargs="*", help="Patterns to ignore in 
 if __name__ == '__main__':
     args = parser.parse_args()
     subject = args.SUBJECT[0]
+    if args.i:
+        ignores = args.i 
+    else:
+        ignores = []
     scraper(subject)
     

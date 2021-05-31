@@ -8,3 +8,4 @@ mnt/
 .credentials
 old/*
 old/
+.vscode/

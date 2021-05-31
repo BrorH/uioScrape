@@ -94,6 +94,8 @@ The day when I wont have to google regex syntaxing, I'll allow myself a slice
 ## Status
 Project is: _heavily in development_
 
+## Acknowledgements
+This project uses [wdfs](https://github.com/jmesmon/wdfs); a free, open source webdav filesystem
 
 ## Contact
 Created by [Bror Hjemgaard](mailto:bror.hjemgaard@gmail.com) - feel free to contact me!

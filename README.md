@@ -76,8 +76,10 @@ Running this script and following the instructions will allow you to use a pin-c
   
 
 #
-### To-do list:
+### To-do list
 - [ ] Add support for other files than just .pdfs
+- [ ] Add more safe unmounting process
+- [ ] Add Windows / MacOS support
 - [ ] Add autocomplete for all subjects via command line
 - [ ] Chose which files from a scrape to be downloaded
 - [ ] Download specific files only
@@ -85,7 +87,7 @@ Running this script and following the instructions will allow you to use a pin-c
 - [ ] Eat 🍕
 - [ ] bugsbugsbugs
 
-### To-done list:
+### To-done list
 - [x] Extract files though mounting of UiO webDav server
 - [x] Basic password/pin system for credential storage 
 - [x] Implement hashing/UUID system to assert no file is downloaded twice. 

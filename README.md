@@ -80,9 +80,9 @@ Running this script and following the instructions will allow you to use a pin-c
 - [ ] Add support for other files than just .pdfs
 - [ ] Add more safe unmounting process
 - [ ] Add Windows / MacOS support
+- [ ] Add more command line arguments, like max downloads, max size downloads, etc
 - [ ] Add autocomplete for all subjects via command line
-- [ ] Chose which files from a scrape to be downloaded
-- [ ] Download specific files only
+- [ ] Safer unmounting system
 - [ ] Add smart filter which detects only specific file types (i.e exams or obligs) 
 - [ ] Eat 🍕
 - [ ] bugsbugsbugs
@@ -91,8 +91,9 @@ Running this script and following the instructions will allow you to use a pin-c
 - [x] Extract files though mounting of UiO webDav server
 - [x] Basic password/pin system for credential storage 
 - [x] Implement hashing/UUID system to assert no file is downloaded twice. 
-- [x] Safer unmouting system
+- [x] Safer unmounting system
 - [x] Group results in a prettier manner
+- [x] Create installation script
     
 #
 ## FAQ

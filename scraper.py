@@ -63,6 +63,25 @@ def bytesize_to_readable(bytes, failsafe =True):
         sys.exit()
     return f"{int(bytes//1e9)} GB"
 
+def file_with_suffix_constructor(filename, downloaded_filenames):
+    # If a filename is already taken, constructs and returns an appropriate name with new suffix
+
+    occurances = sum([filename == foo for foo in downloaded_filenames])
+    assert occurances > 0, "I mean, if this gets called, you really fucked up"
+    if occurances > 0:
+        new_filename =filename + f"({occurances}).pdf"
+    return new_filename
+
+def check_if_ignored(filename):
+    # if any patterns are to be ignored, they will be checked for here. True if ignored
+    if passed_ignore_patterns == []: return False # if no ignores have been given, file will not be ignored
+    for ignore in passed_ignore_patterns:
+        if ignore in filename.lower(): 
+            return True
+    return False
+
+
+
 filename_count_re = re.compile(r"([^(]+?)(\(\d+\))?\.pdf", re.IGNORECASE)
 def download_subject(subject):
     # starts the downloading process. Also makes sure that no duplicate files are downloaded
@@ -81,45 +100,43 @@ def download_subject(subject):
     print(f"Found {num_of_files_found} potential pdfs")
     for num,file in enumerate(mnt_pathglob):
 
-        skip = False
         print_suffix = ""
         print_prefix = f"{bcolors.BOLD}({num+1}/{num_of_files_found}){bcolors.ENDC} "
         hashed_file = get_hash_from_file(file)
         
         filename = re.findall(filename_count_re, str(file.name))[0][0]# strip .pdf extension in order to compare count number
+
         if hashed_file not in hash_arr:
             # if this succeeds, then the pdf is unique and will be downloaded
-            for ignore in ignores:
-                if ignore in filename.lower(): 
-                    print(print_prefix+ f"{bcolors.WARNING} Skipped {bcolors.ENDC} {filename}.pdf: Ignored")
-                    skip = True
-                    break 
-            if skip: continue
-                
+            
+            # check ignores
+            if check_if_ignored(filename):
+                print(print_prefix+ f"{bcolors.WARNING} Skipped {bcolors.ENDC} {filename}.pdf: Ignored")
+                continue
+            
+            # check if filename already exists
             if filename in dl_pathglob_names:
-                occurances = sum([filename == foo for foo in dl_pathglob_names])
-                assert occurances > 0, "I mean, if this gets called, you really fucked up"
-                if occurances > 0:
-                    downloaded_filename =filename + f"({occurances}).pdf"
+                new_filename = file_with_suffix_constructor(filename, dl_pathglob_names)
                 print_suffix = f" {bcolors.OKBLUE}(Added suffix due to existing filename){bcolors.ENDC}"
-                
             else:
-                downloaded_filename = filename + ".pdf"
+                new_filename = filename + ".pdf"
+
+            # add the 
             dl_pathglob_names.append(filename)
             
-            process = subprocess.Popen(["cp","-p", file, f"{dl_dir}/{downloaded_filename}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process = subprocess.Popen(["cp","-p", file, f"{dl_dir}/{new_filename}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = process.communicate()
             if err:
                 print(f"{bcolors.FAIL}{err.decode('utf-8').rstrip()}{bcolors.ENDC}")
                 continue
             
-            dl_size = os.stat(f"{dl_dir}/{downloaded_filename}").st_size
+            dl_size = os.stat(f"{dl_dir}/{new_filename}").st_size
             
             files_downloaded += 1
             bytes_downloaded += dl_size
 
             dl_size = bytesize_to_readable(dl_size)
-            print(print_prefix + f"{bcolors.OKGREEN}Downloaded{bcolors.ENDC} {downloaded_filename}"+f" ({dl_size})" + print_suffix)
+            print(print_prefix + f"{bcolors.OKGREEN}Downloaded{bcolors.ENDC} {new_filename}"+f" ({dl_size})" + print_suffix)
             time.sleep(0.05)
             hash_arr.append(hashed_file)
         else:
@@ -162,9 +179,6 @@ parser.add_argument("-i", metavar="expr",nargs="*", help="Patterns to ignore in 
 if __name__ == '__main__':
     args = parser.parse_args()
     subject = args.SUBJECT[0]
-    if args.i:
-        ignores = args.i 
-    else:
-        ignores = []
+    passed_ignore_patterns = args.i 
     scraper(subject)
     

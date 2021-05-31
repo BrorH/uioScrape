@@ -9,7 +9,7 @@ mnt_out = lambda: subprocess.Popen(["mount"], stdout=subprocess.PIPE).communicat
 
 def mount_webdav(url):
     # mounts the url into the .mnt/ dir
-    mount_args = ["wdfs", url, ".mnt", "-o", "ro", "-o", "auto_unmount", "-o", "large_read"]
+    mount_args = ["wdfs", url, ".mnt", "-o", "ro", "-o", "auto_unmount"]
     if os.path.isfile(".credentials"):
         mount_args += dav_login(url)
     else:

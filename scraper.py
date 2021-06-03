@@ -6,11 +6,12 @@ import re
 import subprocess
 import sys
 import time
+import json
 from pathlib import Path
 
 import numpy as np
 
-from mounter import *
+from mounter import Mounter
 
 
 class bcolors:
@@ -59,7 +60,7 @@ def bytesize_to_readable(bytes, failsafe =True):
     elif failsafe:
         # add failsafe for files over 10 GB
         print(f"{bcolors.FAIL} Encountered too large file (>50 GB). Exiting. {bcolors.ENDC}")
-        unmount_webdav()
+        Mounter.unmount_webdav()
         sys.exit()
     return f"{int(bytes//1e9)} GB"
 
@@ -74,7 +75,7 @@ def file_with_suffix_constructor(filename, downloaded_filenames):
 
 def check_if_ignored(filename):
     # if any patterns are to be ignored, they will be checked for here. True if ignored
-    if passed_ignore_patterns == []: return False # if no ignores have been given, file will not be ignored
+    if passed_ignore_patterns is None: return False # if no ignores have been given, file will not be ignored
     for ignore in passed_ignore_patterns:
         if ignore in filename.lower(): 
             return True
@@ -121,7 +122,7 @@ def download_subject(subject):
             else:
                 new_filename = filename + ".pdf"
 
-            # add the 
+            # add the found file to the glob
             dl_pathglob_names.append(filename)
             
             process = subprocess.Popen(["cp","-p", file, f"{dl_dir}/{new_filename}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -137,7 +138,7 @@ def download_subject(subject):
 
             dl_size = bytesize_to_readable(dl_size)
             print(print_prefix + f"{bcolors.OKGREEN}Downloaded{bcolors.ENDC} {new_filename}"+f" ({dl_size})" + print_suffix)
-            time.sleep(0.05)
+            time.sleep(0.1)
             hash_arr.append(hashed_file)
         else:
             pass
@@ -154,20 +155,23 @@ def scraper(subject):
     #starts the scraper
     subject = subject.upper()
 
-    # the line below is an abomination which I intend to fix "later"
-    subjects_dict = eval(np.load(os.path.relpath("./src/subjects.npy"), allow_pickle=True).__repr__().lstrip("array(").rstrip(",\n      dtype=object)\n"))
+    with open("src/subjects.json", "r+") as file:
+        subject_dict = json.load(file)
     try:
-        dav_url = "https://www-dav.uio.no/studier/emner"+subjects_dict[subject]
+        dav_url = "https://www-dav.uio.no"+subject_dict[subject]
     except KeyError:
         print(f"Subject '{subject}' not found")
         sys.exit(1)
 
-    init_mountcheck()
-    atexit.register(unmount_webdav)
-    mount_webdav(dav_url) 
+    # check if .mnt is already mounted, and unmount it if it is.
+    if Mounter.mnt_is_mounted():
+        Mounter.unmount_webdav()
+
+    Mounter.mount_webdav(dav_url) 
+    atexit.register(Mounter.unmount_webdav) # add failsafe in case process is aborted early
     download_subject(subject)
-    atexit.unregister(unmount_webdav)
-    unmount_webdav()
+    atexit.unregister(Mounter.unmount_webdav)
+    Mounter.unmount_webdav()
 
 
 parser = argparse.ArgumentParser(description='Scrape all semester pages of a UiO subject in order to get the urls of PDFs of old exams and their solutions.\n Made by Bror Hjemgaard, 2021')

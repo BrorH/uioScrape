@@ -46,7 +46,7 @@ def dav_login(url):
     for i in range(3):
         pin = getpass("Enter pin >>")
         try:
-            return ["-o", "username="+uname, "-o", "password="+password_decrypt(p_token.encode("utf-8"), pin).decode()]
+            return ["-o", "username="+uname, "-o", "password='"+password_decrypt(p_token.encode("utf-8"), pin).decode()+"'"]
         except cryptography.fernet.InvalidToken:
             
             print(f"Wrong pin [{i+1}/3]")

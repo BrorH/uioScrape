@@ -11,7 +11,3 @@ old/
 .vscode/
 src/wdfs-1.4.2/
 src/wdfs-1.4.2/src/
-src/facs
-src/emnemapper.json
-credentials.py 
-unmounter.sh

@@ -23,7 +23,10 @@ class Mounter:
         
         # THIS SECTION IS WHERE THE PROGRAM PROMPTS FOR USERNAME AND PASSWORD. 
         # Below is the wdfs call which mounts the subject folders and handles all credentials.
-        mount_args = f"wdfs {url} .mnt -o ro -o auto_unmount -o sync_read -o intr -o accept_sslcert -o noforget -o fsname={Mounter.session_code}"
+        
+        mount_args = f"mount .mntParent && bindfs -n .mntParent/{url} .mnt"
+        print(mount_args)
+        #mount_args = f"wdfs {url} .mnt -o ro -o auto_unmount -o sync_read -o intr -o accept_sslcert -o noforget -o fsname={Mounter.session_code}"
         print("Please enter UiO username and password. (Check readme if you wonder why you have to enter your username and password)")
         for i in range(3): # give three attempts
             res = subprocess.Popen(mount_args, shell=True, stderr=subprocess.PIPE)
@@ -52,34 +55,46 @@ class Mounter:
         If this fails, the unmounting is performed by repeatedly calling fusermount. 
             This works but is less elegant nad often takes longer time as it requires the wdfs process to finish, which can take a long time. This is often a last resort"""
 
-        pid_locator_re = re.compile(r"^\s*?(\d+)(?:.+?)fsname="+Mounter.session_code+r"(?:.+?).+\n\s*(\d+)(?:.+?)wdfs\n")
-        proc = subprocess.Popen(["ps", "ax"], stdout=subprocess.PIPE)
-        output = subprocess.check_output(('grep', 'wdfs'),stdin=proc.stdout)
-        pids = pid_locator_re.findall(output.decode("utf-8"))
+        # pid_locator_re = re.compile(r"^\s*?(\d+)(?:.+?)fsname="+Mounter.session_code+r"(?:.+?).+\n\s*(\d+)(?:.+?)wdfs\n")
+        # proc = subprocess.Popen(["ps", "ax"], stdout=subprocess.PIPE)
+        # output = subprocess.check_output(('grep', 'wdfs'),stdin=proc.stdout)
+        # pids = pid_locator_re.findall(output.decode("utf-8"))
 
-        if pids: # if method succesfully located the pid
-            pid_local = int(pids[0][0]) # local process. Will end as soon as python script ends
-            pid_wdfs = int(pids[0][1]) # wdfs mounting process pid. Must be ended manually in order to ensure swift unmounting
-            if abs(pid_local-pid_wdfs) <= 10: # this is a soft test to assert that we are most likely not interferring with any other wdfs processes that the user has initiated, as the pids are relatively close
-                killproc = subprocess.Popen(["kill", str(pid_wdfs)])
-                killproc.wait()
-                return
+        # if pids: # if method succesfully located the pid
+        #     pid_local = int(pids[0][0]) # local process. Will end as soon as python script ends
+        #     pid_wdfs = int(pids[0][1]) # wdfs mounting process pid. Must be ended manually in order to ensure swift unmounting
+        #     if abs(pid_local-pid_wdfs) <= 10: # this is a soft test to assert that we are most likely not interferring with any other wdfs processes that the user has initiated, as the pids are relatively close
+        #         killproc = subprocess.Popen(["kill", str(pid_wdfs)])
+        #         killproc.wait()
+        #         return
         
-        # if the above fails, the below is alternate unmounting process
-        print(f"{mountcolors.ALERT}{mountcolors.BOLD}Traditional unmouting failed. Please wait for this process to finish! Program will exit when done!{mountcolors.ENDC}")
+        # # if the above fails, the below is alternate unmounting process
+        # print(f"{mountcolors.ALERT}{mountcolors.BOLD}Traditional unmouting failed. Please wait for this process to finish! Program will exit when done!{mountcolors.ENDC}")
 
         tries = 0
         while Mounter.mnt_is_mounted() and tries < 100:
-    
-            unmount_proc = subprocess.Popen(["fusermount", "-u", ".mnt/"], stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            
+            unmount_proc = subprocess.Popen(["fusermount", "-uz", ".mnt/"], stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+
             out, err = unmount_proc.communicate()
             if err:
                 tries += 1
             else:
-                print(f"{mountcolors.OKGREEN}{mountcolors.BOLD}Done!{mountcolors.ENDC}")
-                return
+                print("Successfully unmounted .mnt")
+                break
+        if tries == 100:
+            print("Failed .mnt unmount")
 
-        print("Attempted", tries, "unmounts unsuccessfully. Please manually unmount .mnt/")
+        tries = 0
+        while Mounter.mntParent_is_mounted() and tries < 100:
+            unmount_proc = subprocess.Popen(["fusermount", "-uz", ".mntParent/"], stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+            out, err = unmount_proc.communicate()
+            if err:
+                tries += 1
+            else:
+                print("Successfully unmounted .mntParent")
+                return
+        print("Attempted", tries, "unmounts unsuccessfully. Please manually unmount .mnt/ and/or .mntParent/")
 
     
 
@@ -87,4 +102,9 @@ class Mounter:
     mnt_out = lambda: subprocess.Popen(["mount"], stdout=subprocess.PIPE).communicate()[0].decode("utf-8")
     def mnt_is_mounted(): 
         return Mounter.mnt_global_path in Mounter.mnt_out()
+
+    mntParent_global_path = os.path.abspath(".mntParent").__str__() +" "
+    mntParent_out = lambda: subprocess.Popen(["mount"], stdout=subprocess.PIPE).communicate()[0].decode("utf-8")
+    def mntParent_is_mounted(): 
+        return Mounter.mntParent_global_path in Mounter.mntParent_out()  
             

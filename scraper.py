@@ -138,10 +138,9 @@ def download_subject(subject):
 
             dl_size = bytesize_to_readable(dl_size)
             print(print_prefix + f"{bcolors.OKGREEN}Downloaded{bcolors.ENDC} {new_filename}"+f" ({dl_size})" + print_suffix)
-            time.sleep(0.1)
+            time.sleep(0.01)
             hash_arr.append(hashed_file)
         else:
-            pass
             print(print_prefix + f"{bcolors.WARNING} Skipped {bcolors.ENDC} {filename}.pdf: Duplicate")
     
 
@@ -164,10 +163,10 @@ def scraper(subject):
         sys.exit(1)
 
     # check if .mnt is already mounted, and unmount it if it is.
-    if Mounter.mnt_is_mounted():
+    if Mounter.mnt_is_mounted() or Mounter.mntParent_is_mounted():
         Mounter.unmount_webdav()
-
-    Mounter.mount_webdav(dav_url) 
+    print(dav_url)
+    Mounter.mount_webdav(dav_url.replace("https://www-dav.uio.no/studier/emner/", "")) 
     atexit.register(Mounter.unmount_webdav) # add failsafe in case process is aborted early
     download_subject(subject)
     atexit.unregister(Mounter.unmount_webdav)
@@ -177,12 +176,14 @@ def scraper(subject):
 parser = argparse.ArgumentParser(description='Scrape all semester pages of a UiO subject in order to get the urls of PDFs of old exams and their solutions.\n Made by Bror Hjemgaard, 2021')
 parser.add_argument('SUBJECT', metavar='SUBJECT', nargs=1,
                     help='Subject code of any UiO subject. Case insensitive')
-parser.add_argument("-i", metavar="expr",nargs="*", help="Patterns to ignore in filenames, separated by comma, i.e 'lecture,assignment'. Pdfs with names containing these will not be downloaded")
-    
+parser.add_argument("-i", metavar="expr",nargs="*", help="Patterns to ignore in filenames. Pdfs with names containing these will not be downloaded")
+
+parser.add_argument("-s", metavar="sem",nargs="*", help="Which semesters to look for files in, i.e H16, S21 (or V21 for the norwegians). Single digits must be zero-left padded")
 
 if __name__ == '__main__':
     args = parser.parse_args()
     subject = args.SUBJECT[0]
     passed_ignore_patterns = args.i 
+    semesters = args.s
     scraper(subject)
     

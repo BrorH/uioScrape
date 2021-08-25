@@ -25,8 +25,8 @@ ahahahaha
 ## MacOS
 pray to GNU and follow [Linux](#linux) guide
 ## Linux
-1. Requires **Python3.8 or later**  as well as `numpy`:
-   - `$ pip install numpy`
+1. Requires **Python3.8 or later**  as well as the modules `numpy, imohash`:
+   - `$ pip install numpy imohash`
 2. [Clone](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository) this repo.  
 3. Run `install.sh` as root, i.e  `$ sudo ./install.sh`
 

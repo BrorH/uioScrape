@@ -1,12 +1,12 @@
 import argparse
 import atexit
 import hashlib
+import json
 import os
 import re
 import subprocess
 import sys
 import time
-import json
 from pathlib import Path
 
 import numpy as np
@@ -25,18 +25,18 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+
+
 def get_hash_from_file(path):
     # returns a unique utf-8 encoded hash of pdf at given path
-    m = hashlib.md5()
-    try:
-        with open(path, "rb") as file:
-            
-            m.update( file.read())
-    except Exception as e:
-        # if the above fails, create a hash from just the filename
-        print(e)
-        m.update(bytes(str(path).split("/")[-1].encode("utf-8")))
-    return m.digest()
+    file_hash = hashlib.md5()
+    t = 0
+    with open(path, "rb") as f:
+        while (chunk := f.read(8192*16)) and t<=100:
+            t += 1
+            file_hash.update(chunk)
+    return file_hash.digest()
+    
 
 
 def generate_hash_file(dir):
@@ -83,6 +83,7 @@ def check_if_ignored(filename):
 
 
 
+
 filename_count_re = re.compile(r"([^(]+?)(\(\d+\))?\.pdf", re.IGNORECASE)
 def download_subject(subject):
     # starts the downloading process. Also makes sure that no duplicate files are downloaded
@@ -103,8 +104,9 @@ def download_subject(subject):
 
         print_suffix = ""
         print_prefix = f"{bcolors.BOLD}({num+1}/{num_of_files_found}){bcolors.ENDC} "
-        hashed_file = get_hash_from_file(file)
-        
+        print(print_prefix + f"{bcolors.OKCYAN} Loading {bcolors.ENDC}"+ "\r", end="")
+
+        hashed_file = get_hash_from_file(file)#hashfile(file, sample_size=10, sample_threshhold=1000)
         filename = re.findall(filename_count_re, str(file.name))[0][0]# strip .pdf extension in order to compare count number
 
         if hashed_file not in hash_arr:
@@ -124,7 +126,9 @@ def download_subject(subject):
 
             # add the found file to the glob
             dl_pathglob_names.append(filename)
-            
+
+            print(print_prefix + f"{bcolors.OKCYAN}Downloading {bcolors.ENDC} {new_filename}"+ "\r", end="")
+            # time.sleep(1)
             process = subprocess.Popen(["cp","-p", file, f"{dl_dir}/{new_filename}"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = process.communicate()
             if err:
@@ -132,12 +136,12 @@ def download_subject(subject):
                 continue
             
             dl_size = os.stat(f"{dl_dir}/{new_filename}").st_size
-            
             files_downloaded += 1
             bytes_downloaded += dl_size
+            
 
             dl_size = bytesize_to_readable(dl_size)
-            print(print_prefix + f"{bcolors.OKGREEN}Downloaded{bcolors.ENDC} {new_filename}"+f" ({dl_size})" + print_suffix)
+            print(print_prefix + f"{bcolors.OKGREEN}Downloaded{bcolors.ENDC}  {new_filename}"+f" ({dl_size})" + print_suffix)
             time.sleep(0.01)
             hash_arr.append(hashed_file)
         else:
@@ -165,7 +169,6 @@ def scraper(subject):
     # check if .mnt is already mounted, and unmount it if it is.
     if Mounter.mnt_is_mounted() or Mounter.mntParent_is_mounted():
         Mounter.unmount_webdav()
-    print(dav_url)
     Mounter.mount_webdav(dav_url.replace("https://www-dav.uio.no/studier/emner/", "")) 
     atexit.register(Mounter.unmount_webdav) # add failsafe in case process is aborted early
     download_subject(subject)

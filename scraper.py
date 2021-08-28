@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import argparse
 import atexit
 import hashlib
@@ -31,10 +32,15 @@ def get_hash_from_file(path):
     # returns a unique utf-8 encoded hash of pdf at given path
     file_hash = hashlib.md5()
     t = 0
-    with open(path, "rb") as f:
-        while (chunk := f.read(8192*16)) and t<=100:
-            t += 1
-            file_hash.update(chunk)
+    try:
+        with open(path, "rb") as f:
+            while (chunk := f.read(8192*16)) and t<=100:
+                t += 1
+                file_hash.update(chunk)
+
+    except OSError:
+        # some files are restricted
+        return
     return file_hash.digest()
     
 
@@ -85,7 +91,7 @@ def check_if_ignored(filename):
 
 
 filename_count_re = re.compile(r"([^(]+?)(\(\d+\))?\.pdf", re.IGNORECASE)
-def download_subject(subject):
+def download_subject(subject, path_prefix):
     # starts the downloading process. Also makes sure that no duplicate files are downloaded
     print("Loading... Please wait")
     dl_dir = os.path.abspath("./downloads/"+subject) # dir to be downloaded into
@@ -93,7 +99,7 @@ def download_subject(subject):
         subprocess.run(["mkdir", "-p", dl_dir])
 
     hash_arr = list(generate_hash_file(dl_dir)) # create an empty hash file and get an empty list of correct length
-    mnt_pathglob = list(Path('./.mnt/').rglob('*.pdf'))
+    mnt_pathglob = list(Path('./.mnt/'+path_prefix).rglob('*.pdf'))
     dl_pathglob = list(Path(dl_dir).rglob('*.pdf'))
     dl_pathglob_names = [re.findall(filename_count_re, file.name)[0][0] for file in dl_pathglob] # get names without extension or count number (#)
     num_of_files_found = len(mnt_pathglob)
@@ -107,6 +113,9 @@ def download_subject(subject):
         print(print_prefix + f"{bcolors.OKCYAN} Loading {bcolors.ENDC}"+ "\r", end="")
 
         hashed_file = get_hash_from_file(file)#hashfile(file, sample_size=10, sample_threshhold=1000)
+        if hashed_file is None:
+            # hash may fail if file has restricted access
+            print(print_prefix + f"{bcolors.FAIL} Denied{bcolors.ENDC}  {file}: Skipping")
         filename = re.findall(filename_count_re, str(file.name))[0][0]# strip .pdf extension in order to compare count number
 
         if hashed_file not in hash_arr:
@@ -162,6 +171,8 @@ def scraper(subject):
         subject_dict = json.load(file)
     try:
         dav_url = "https://www-dav.uio.no"+subject_dict[subject]
+        path_prefix = subject_dict[subject].replace("/studier/emner/", "")
+        print(subject_dict[subject])
     except KeyError:
         print(f"Subject '{subject}' not found")
         sys.exit(1)
@@ -171,7 +182,7 @@ def scraper(subject):
         Mounter.unmount_webdav()
     Mounter.mount_webdav(dav_url.replace("https://www-dav.uio.no/studier/emner/", "")) 
     atexit.register(Mounter.unmount_webdav) # add failsafe in case process is aborted early
-    download_subject(subject)
+    download_subject(subject, path_prefix)
     atexit.unregister(Mounter.unmount_webdav)
     Mounter.unmount_webdav()
 

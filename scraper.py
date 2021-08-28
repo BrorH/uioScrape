@@ -91,6 +91,7 @@ def check_if_ignored(filename):
 
 
 filename_count_re = re.compile(r"([^(]+?)(\(\d+\))?\.pdf", re.IGNORECASE)
+semester_re = re.compile(r"\.mnt/(?:.+?/)+?([hv]\d\d)(?:.+?)+?\.pdf", re.IGNORECASE)
 def download_subject(subject, path_prefix):
     # starts the downloading process. Also makes sure that no duplicate files are downloaded
     print("Loading... Please wait")
@@ -99,7 +100,33 @@ def download_subject(subject, path_prefix):
         subprocess.run(["mkdir", "-p", dl_dir])
 
     hash_arr = list(generate_hash_file(dl_dir)) # create an empty hash file and get an empty list of correct length
-    mnt_pathglob = list(Path('./.mnt/'+path_prefix).rglob('*.pdf'))
+
+    # if a list of semesters are given, we only wish to study certain directories
+    if semesters:
+        mnt_pathglob = []
+        for sem in semesters:
+            mnt_pathglob += list(Path('./.mnt/'+path_prefix+"/"+sem).rglob('*.pdf'))
+    else:
+        mnt_pathglob = list(Path('./.mnt/'+path_prefix).rglob('*.pdf'))
+    
+    # order paths by semesters, most recent semesters first
+    corresponding_years = []
+    for path in mnt_pathglob:
+        try:
+            semester =  re.findall(semester_re, str(path))[0]
+            yr = int(semester[1:])
+            if yr > 80:
+                yr += 1900
+            else:
+                yr += 2000
+            season = semester[0].lower()
+            if season == "h":
+                yr += 0.5
+        except:
+            yr = 9000
+        corresponding_years.append(yr)
+    mnt_pathglob = [x for _,x in sorted(zip(corresponding_years,mnt_pathglob))][::-1]
+
     dl_pathglob = list(Path(dl_dir).rglob('*.pdf'))
     dl_pathglob_names = [re.findall(filename_count_re, file.name)[0][0] for file in dl_pathglob] # get names without extension or count number (#)
     num_of_files_found = len(mnt_pathglob)
@@ -107,9 +134,15 @@ def download_subject(subject, path_prefix):
     files_downloaded = 0 # count number of downloaded files
     print(f"Found {num_of_files_found} potential pdfs")
     for num,file in enumerate(mnt_pathglob):
+        
+        try:
+            semester = re.findall(semester_re, str(file))[0]
 
+        except:
+            
+            semester = "--"
+        print_prefix = f"{bcolors.BOLD}({num+1}/{num_of_files_found}){bcolors.ENDC} {semester} "
         print_suffix = ""
-        print_prefix = f"{bcolors.BOLD}({num+1}/{num_of_files_found}){bcolors.ENDC} "
         print(print_prefix + f"{bcolors.OKCYAN} Loading {bcolors.ENDC}"+ "\r", end="")
 
         hashed_file = get_hash_from_file(file)#hashfile(file, sample_size=10, sample_threshhold=1000)
@@ -172,13 +205,12 @@ def scraper(subject):
     try:
         dav_url = "https://www-dav.uio.no"+subject_dict[subject]
         path_prefix = subject_dict[subject].replace("/studier/emner/", "")
-        print(subject_dict[subject])
     except KeyError:
         print(f"Subject '{subject}' not found")
         sys.exit(1)
 
     # check if .mnt is already mounted, and unmount it if it is.
-    if Mounter.mnt_is_mounted() or Mounter.mntParent_is_mounted():
+    if Mounter.mnt_is_mounted():
         Mounter.unmount_webdav()
     Mounter.mount_webdav(dav_url.replace("https://www-dav.uio.no/studier/emner/", "")) 
     atexit.register(Mounter.unmount_webdav) # add failsafe in case process is aborted early

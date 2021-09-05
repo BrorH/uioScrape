@@ -39,7 +39,8 @@ Run `scraper.py --help` for help.
 # Features
 - Smart downloading which assures that duplicate files won't be downloaded (even though they may have different filenames).
 - If two or more files have different content but same name, an appropriate filename suffix is constructed, e.g `file.pdf` and `file(1).pdf`
-- Ignore certain patterns within the filenames.
+- Supports _ALL_ subjects on UiO
+- You can add patterns to ignore within the filenames
 
 
 ### To-do list

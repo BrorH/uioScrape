@@ -4,9 +4,6 @@
 
 ## Table of contents
 - [Installing](#installing)
-  - [Windows](#windows)
-  - [MacOS](#macos)
-  - [Linux](#linux)
 - [Usage](#usage)
   - [scraper.py](#scraperpy)
   - [FAQ](#faq)
@@ -20,15 +17,10 @@
 
 
 # Installing
-## Windows
-ahahahaha
-## MacOS
-pray to GNU and follow [Linux](#linux) guide
-## Linux
-1. Requires **Python3.8 or later**  as well as the module `numpy`:
-   - `$ pip install numpy`
+1. Requires **Python3.8 or later** as well as the module `bs4`
+    
+    `pip install bs4`
 2. [Clone](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/cloning-a-repository) this repo.  
-3. Run `install` as root: `$ sudo ./install`
 
 <br>  
 

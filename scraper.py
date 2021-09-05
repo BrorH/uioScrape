@@ -125,12 +125,14 @@ def scrape(url, subdirs_found = [], pdfs_found = []):
         attrs = href.attrs
         if "title" in attrs.keys():
             if attrs["title"] == "PDF":
-                if (new_pdf := attrs["href"]) not in pdfs_found:
+                if (attrs["href"]) not in pdfs_found:
+                    new_pdf = attrs["href"]
                     pdfs_found.append(new_pdf)
                     download_pdf(new_pdf)
         if href.findChildren():
             try:
-                if (new_url := attrs["href"]) not in (subdirs_found):
+                if (attrs["href"]) not in (subdirs_found):
+                    new_url = attrs["href"]
                     subdirs_found.append(new_url)
                     children_subdirs_found= scrape(new_url, subdirs_found, pdfs_found)
                     if children_subdirs_found:

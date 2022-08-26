@@ -108,7 +108,6 @@ def download_pdf(url):
 
 
 
-
 def scrape(url, subdirs_found = [], pdfs_found = []):
     global request_count, download_count
     request_count += 1

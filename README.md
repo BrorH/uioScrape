@@ -36,6 +36,7 @@ The scraped files will be downloaded into a folder `downloads` within the `UiOSc
 Run `scraper.py --help` for help.
 
 
+
 # Features
 - Smart downloading which assures that duplicate files won't be downloaded (even though they may have different filenames).
 - If two or more files have different content but same name, an appropriate filename suffix is constructed, e.g `file.pdf` and `file(1).pdf`
